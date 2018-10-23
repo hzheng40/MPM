@@ -1,7 +1,6 @@
 #include <iostream>
 #include <Eigen/Dense>
-#include "grid.h"
-#include "particle.h"
+#include "MPM.h"
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
