@@ -8,26 +8,26 @@
 #endif //MPM_H
 
 #include <Partio.h>
+#include <Eigen/Dense>
+#include <iostream>
 
 namespace MPM {
     class Particle;
+    class ParticleIter;
     class Grid;
 
     class Grid {
     public:
         Grid(int size, float resolution);
         ~Grid();
-        void initGrid();
-        void updateGrid(Particles particles);
+        void updateGrid(Particle& particle);
 
     private:
-        int gird_size;
+        int grid_size;
         float grid_resolution;
         Eigen::MatrixXi grid_ind;
         Eigen::MatrixXf grid_mass;
         Eigen::MatrixXf grid_vel;
-
-
 
     };
 
@@ -36,10 +36,27 @@ namespace MPM {
         Particle();
         ~Particle();
         void initParticle();
-        void updateParticle(Grid grid);
+        void updateParticle();
+        void writeParticlesToFile(std::string file_path);
 
     private:
         float mass;
         float velocities;
+        float volume;
+        // 2d position, Vector3f if 3D
+        Eigen::Vector2f position;
+        Eigen::MatrixXf deformation_gradient;
     };
+
+    class ParticleIter {
+    public:
+        ParticleIter();
+        ~ParticleIter();
+        void initIter();
+
+    private:
+
+    };
+
+    float w interpolate()
 }

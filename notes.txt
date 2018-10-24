@@ -1,0 +1,44 @@
+////
+//// Created by Hongrui Zheng on 10/23/18.
+////
+//
+//// init particles distribution?
+//// good strategy for sampling: poisson disk
+//
+////MPM big loop
+//for time_step = 1,2,....,N {
+//    // PIC loop
+//    precompute_weights();
+//    particle_to_grid_transfer();
+//    updating_v_i_with_physics();
+//    grid_to_particle_transfer();
+//    move_particles();
+//
+//}
+//
+//particle_to_grid_transfer() {
+//    m_i = sum_p(m_p*wi_p);
+//    (mv)_i = sum_p(m_pv_p*w_ip);
+//    for all (nodes with non-zero mass){
+//        v_i = (mv)_i/m_i;
+//    }
+//}
+//
+//grid_to_particle_transfer() {
+//    v_p = sum_i(w_ip*v_i);
+//}
+//
+//move_particles() {
+//    p->position += delt_t*v_p;
+//}
+//
+////properties for w_ip, gradient of w_ip:
+//// sum_i (w_ip) = 1   ->>> portion of unity
+//// sum_i x_i*w_ip = x_p   ->>> MPM kernel interpolates position
+//// gradient sum_i del_w_ip = 0
+//
+//
+//// 1. mass is conserved during P2G
+//// m_i = sum_p m_p*w_ip
+//// sum_i m_i = sum_i sum_p m_p*w_ip = sum_p m_p (sum_i w_ip) in parenthesis evaluates to 1
+//// 2. momentum is conserved during P2G and G2P
