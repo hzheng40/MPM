@@ -13,7 +13,7 @@
 
 namespace MPM {
     class Particle;
-    class ParticleIter;
+    class ParticleList;
     class Grid;
 
     class Grid {
@@ -48,15 +48,15 @@ namespace MPM {
         Eigen::MatrixXf deformation_gradient;
     };
 
-    class ParticleIter {
+    class ParticleList {
     public:
-        ParticleIter();
-        ~ParticleIter();
-        void initIter();
+        ParticleList();
+        ~ParticleList();
+        void init();
 
     private:
 
     };
 
-    float w interpolate()
+//    float w interpolate()
 }
