@@ -7,18 +7,68 @@
 
 #include <Eigen/Dense>
 #include "Constants.h"
+#include "Thing.h"
+using namespace Eigen;
+typedef struct GridNode {
+    // explicit
+    float mass;
+    bool on;
+    Vector2f velocity, force;
 
-namespace MPM {
-    typedef struct GridNode {
-        float mass;
-        Eigen::Vector2f velocity;
+} GridNode;
 
-    } GridNode;
+class Grid {
+public:
+    Vector2f origin, size, cellsize;
+    Object* obj;
+    int nodes_length;
+    float node_area;
+    GridNode* nodes; //start of grid nodes
 
-    class Grid {
-    public:
-    };
+    Grid(Vector2f pos, Vector2f dims, Vector2f cells, Object* obj);
+    Grid(const Grid& orig);
+    virtual ~Grid();
+    // particles to grid
+    void initializeMass();
+    void initilaizeVelocities();
+    // grid volumes to particles (1st timestamp)
+    void calculateVolumes() const;
+    // grid velocities
+    void explicitVelocities(const Vector2f& gravity);
+    // implicit for future?
+    // grid velocities to particles
+    void updateVelocities() const;
+    // collision
+    void collisionGrid();
+    void collisionParticles() const;
+    // interpolation with cubic bspline
+    static float bspline(float x) {
+        x = fabs(x);
+        float w;
 
-} // end namespace
+        if (x < 1) {
+            w = x*x*(x/2-1)+2/3.0;
+        } else if (x < 2) {
+            w = x*(x*(-x/6+1)-2)+4/3.0;
+        } else {
+            return 0;
+        }
 
+        if (w < BSPLINE_EPSILON) {
+            return 0;
+        }
+
+        return w;
+    }
+    static float bsplinePrime(float x) {
+        float abs_x = fabs(x), w;
+        if (abs_x < 1) {
+            return 1.5*x*abs_x-2*x;
+        } else if (x < 2) {
+            return -x*abs_x/2+2*x-2*x/abs_x;
+        } else {
+            return 0;
+        }
+    }
+};
 #endif //MPM_GRID_H
