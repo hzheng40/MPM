@@ -2,10 +2,11 @@
 // Created by billyzheng on 11/4/18.
 //
 
-#ifndef MPM_OBJECT_H
-#define MPM_OBJECT_H
+#ifndef MPM_THING_H
+#define MPM_THING_H
 #include <vector>
 #include <Eigen/Dense>
+#include <Partio.h>
 #include "Particle.h"
 #include "Constants.h"
 using namespace Eigen;
@@ -18,6 +19,8 @@ public:
     Thing(int object_size);
     Thing(const Thing& orig);
     virtual ~Thing();
+    // write to partio file
+    void toFile(std::string filename);
     // transformations
     void scale(Vector2f origin, Vector2f scale);
     void translate(Vector2f offset);

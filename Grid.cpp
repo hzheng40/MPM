@@ -4,7 +4,7 @@
 
 #include "Grid.h"
 
-Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, Object* object) {
+Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, Thing* object) {
     obj = object;
     origin = pos;
     cellsize = dims/cells;
@@ -33,7 +33,7 @@ void Grid::calculateVolumes() const {
 
 void Grid::explicitVelocities(const Vector2f &gravity) {
     for (int i=0; i<obj->size; i++) {
-        Partile& p = obj->particles[i];
+        Particle& p = obj->particles[i];
         Matrix2f energy = p.energyDerivative();
         int ox = p.grid_position[0], oy = p.grid_position[1];
         for (int idx=0, y=oy-1, y_end=y+3;  y<=y_end; y++) {
@@ -70,9 +70,11 @@ void Grid::updateVelocities() const {
                     GridNode &node = nodes[(int) (y*size[0]+x)];
                     pic += node.force*w;
                     flip += (node.force - node.velocity)*w;
-                    grad += node.force.outer_product(p.weight_gradient[idx]);
+                    grad += node.force * p.weight_gradient[idx];
                 }
             }
         }
+        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
     }
+    collisionParticles();
 }

@@ -20,12 +20,12 @@ typedef struct GridNode {
 class Grid {
 public:
     Vector2f origin, size, cellsize;
-    Object* obj;
+    Thing* obj;
     int nodes_length;
     float node_area;
     GridNode* nodes; //start of grid nodes
 
-    Grid(Vector2f pos, Vector2f dims, Vector2f cells, Object* obj);
+    Grid(Vector2f pos, Vector2f dims, Vector2f cells, Thing* obj);
     Grid(const Grid& orig);
     virtual ~Grid();
     // particles to grid
