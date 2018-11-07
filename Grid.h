@@ -7,8 +7,9 @@
 
 #include <Eigen/Dense>
 #include "Constants.h"
-#include "Thing.h"
+#include "Particle.h"
 using namespace Eigen;
+using namespace std;
 typedef struct GridNode {
     // explicit
     float mass;
@@ -20,32 +21,26 @@ typedef struct GridNode {
 class Grid {
 public:
     Vector2f origin, size, cellsize;
-    Thing* obj;
+    array<Particle, TEST_SIZE> object;
     int nodes_length;
     float node_area;
     GridNode* nodes; //start of grid nodes
 
-    Grid(Vector2f pos, Vector2f dims, Vector2f cells, Thing* obj);
-    Grid(const Grid& orig);
+    Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object);
     virtual ~Grid();
     // particles to grid
     void initializeMass();
     void initilaizeVelocities();
-    // grid volumes to particles (1st timestamp)
     void calculateVolumes() const;
-    // grid velocities
-    void explicitVelocities(const Vector2f& gravity);
-    // implicit for future?
-    // grid velocities to particles
-    void updateVelocities() const;
+    void calculateVelocities(const Vector2f &gravity);
+    void updateVelocities();
     // collision
     void collisionGrid();
-    void collisionParticles() const;
+    void collisionParticles();
     // interpolation with cubic bspline
     static float bspline(float x) {
         x = fabs(x);
         float w;
-
         if (x < 1) {
             w = x*x*(x/2-1)+2/3.0;
         } else if (x < 2) {
@@ -53,11 +48,9 @@ public:
         } else {
             return 0;
         }
-
         if (w < BSPLINE_EPSILON) {
             return 0;
         }
-
         return w;
     }
     static float bsplinePrime(float x) {

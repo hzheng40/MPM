@@ -1,13 +1,19 @@
-cmake_minimum_required(VERSION 3.12)
-project(MPM)
-
-set(CMAKE_CXX_STANDARD 14)
+cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
+project(PARTIO_EXAMPLE)
+set (CMAKE_CXX_STANDARD 11)
 find_package(Eigen3 REQUIRED)
-#include_directories(/usr/local/include)
+set(EXTERNAL ${CMAKE_BINARY_DIR}/external)
+
 include(partio.cmake)
+
 file(GLOB SRC "*.h" "*.cpp")
-#add_executable(MPM main.cpp Particle.h Particle.cpp Constants.h Grid.h Grid.cpp Thing.h Thing.cpp)
-add_executable(MPM test.cpp)
-#target_link_libraries(MPM Partio)
-#add_dependencies(MPM partio-dl)
-target_link_libraries (MPM Eigen3::Eigen)
+
+#add_executable(main test.cpp)
+#target_link_libraries(main partio)
+#add_dependencies(main partio-dl)
+
+#add_executable(main main.cpp Particle.cpp Particle.h Grid.h Grid.cpp Constants.h)
+#target_link_libraries(main partio Eigen3::Eigen)
+add_executable(main test.cpp)
+target_link_libraries(main partio)
+add_dependencies(main partio-dl)

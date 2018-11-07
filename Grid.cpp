@@ -4,34 +4,75 @@
 
 #include "Grid.h"
 
-Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, Thing* object) {
-    obj = object;
-    origin = pos;
-    cellsize = dims/cells;
-    size = cells+1;
-    nodes_length = size[0]*size[1];
+Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object) {
+    origin = Vector2f();
+    origin(0) = pos(0);
+    origin(1) = pos(1);
+    cellsize = Vector2f();
+    cellsize(0) = dims(0)/cells(0);
+    cellsize(1) = dims(1)/cells(1);
+    size = cells + Vector2f::Ones();
+    nodes_length = size(0)*size(1);
     nodes = new GridNode[nodes_length];
-    node_area = cellsize[0]*cellsize[1];
+    node_area = cellsize(0)*cellsize(1);
+    this->object = object;
 }
 
 Grid::~Grid() {
     delete[] nodes;
 }
 
+// initializing grid mass from original particles, only ran once at the beginning
 void Grid::initializeMass() {
     memset(nodes, 0, sizeof(GridNode)*nodes_length);
-    for (int i = 0; i<obj->size)
+    for (int i=0; i<object.size(); i++) {
+        Particle& p = object[i];
+        p.grid_position = (p.position - origin)/cellsize;
+        float ox = p.grid_position(0), oy = p.grid_position(1);
+        for (int idx=0, y=oy=1, y_end=y+3; y<=y_end; y++) {
+            float y_pos = oy-y, wy = Grid::bspline(y_pos), dy = Grid::bsplinePrime(y_pos);
+            for (int x=ox-1, x_end=x+3; x<=x_end; x++, idx++) {
+                float x_pos = ox-x, wx = Grid::bspline(x_pos), dx = Grid::bsplinePrime(x_pos);
+                float weight = wx*wy;
+                p.weights[idx] = weight;
+                p.weight_gradient[idx] = Vector2f(dx*wy, wx*dy);
+                p.weight_gradient[idx](0) /= cellsize(0);
+                p.weight_gradient[idx](1) /= cellsize(1);
+                nodes[(int) (y*size(0)+x)].mass += weight*p.mass;
+            }
+        }
+    }
 }
-
+// interpolate vel after mass, conserving momentum
 void Grid::initilaizeVelocities() {
-
+    for (int i=0; i<object.size(); i++) {
+        Particle& p = object[i];
+        float ox = p.grid_position(0), oy = p.grid_position(1);
+        for (int idx=0, y=oy-1, y_end=y+3; y<=y_end; y++) {
+            for (int x=ox-1, x_end=x+3; x<=x_end; x++, idx++) {
+                float w = p.weights[idx];
+                if (w > BSPLINE_EPSILON) {
+                    int n = (int) (y*size(0)+x);
+                    nodes[n].velocity += p.velocity * w * p.mass;
+                    nodes[n].on = true;
+                }
+            }
+        }
+    }
+    for (int i=0; i<nodes_length; i++) {
+        GridNode &node = nodes[i];
+        if (node.on) {
+            node.velocity /= node.mass;
+        }
+    }
+    collisionGrid();
 }
 
 void Grid::calculateVolumes() const {
 
 }
 
-void Grid::explicitVelocities(const Vector2f &gravity) {
+void Grid::calculateVelocities(const Vector2f &gravity) {
     for (int i=0; i<obj->size; i++) {
         Particle& p = obj->particles[i];
         Matrix2f energy = p.energyDerivative();
@@ -40,7 +81,7 @@ void Grid::explicitVelocities(const Vector2f &gravity) {
             for (int x=ox-1, x_end=x+3; x<=x_end; x++, idx++) {
                 float w = p.weights[idx];
                 if (w > BSPLINE_EPSILON) {
-                    int n = (int) (y*size[0]+x);
+                    int n = (int) (y*size(0)+x);
                     nodes[n].force += energy*p.weight_gradient[idx];
                 }
             }
@@ -56,18 +97,19 @@ void Grid::explicitVelocities(const Vector2f &gravity) {
     collisionGrid();
 }
 
-void Grid::updateVelocities() const {
-    for (int i=0; i<obj->size; i++) {
-        Particle& p = obj->particles[i];
+void Grid::updateVelocities() {
+    for (int i=0; i<object.size(); i++) {
+        Particle& p = object[i];
         Vector2f pic, flip = p.velocity;
         Matrix2f& grad = p.velocity_gradient;
-        grad.setData(0.0);
-        int ox = p.grid_position[0], oy = p.grid_position[1];
+        //grad.setData(0.0);
+        grad = grad.setZero();
+        float ox = p.grid_position(0), oy = p.grid_position(1);
         for (int idx=0, y=oy-1, y_end=y+3; y<=y_end; y++) {
             for (int x=ox-1, x_end=x+3; x<=x_end; x++, idx++) {
                 float w = p.weights[idx];
                 if (w > BSPLINE_EPSILON) {
-                    GridNode &node = nodes[(int) (y*size[0]+x)];
+                    GridNode &node = nodes[(int) (y*size(0)+x)];
                     pic += node.force*w;
                     flip += (node.force - node.velocity)*w;
                     grad += node.force * p.weight_gradient[idx];
@@ -78,3 +120,41 @@ void Grid::updateVelocities() const {
     }
     collisionParticles();
 }
+
+void Grid::collisionGrid() {
+    Vector2f delta_scale = Vector2f(TIMESTEP, TIMESTEP);
+    delta_scale(0) /= cellsize(0);
+    delta_scale(1) /= cellsize(1);
+    for (int y=0, idx=0; y<size(1); y++) {
+        for (int x=0; x<size(0); x++, idx++) {
+            GridNode &node = nodes[idx];
+            if (node.on) {
+                Vector2f new_pos = node.force*delta_scale+Vector2f(x, y);
+                // LR
+                if (new_pos(0) < BSPLINE_RADIUS || new_pos(0) > size(0)-BSPLINE_RADIUS-1) {
+                    node.force(0) = 0;
+                    node.force(1) *= STICKY;
+                }
+                // TB
+                if (new_pos(1) < BSPLINE_RADIUS || new_pos(1) > size(1)-BSPLINE_RADIUS-1) {
+                    node.force(1) = 0;
+                    node.force(0) *= STICKY;
+                }
+            }
+        }
+    }
+}
+
+void Grid::collisionParticles() {
+    for (int i=0; i<object.size(); i++) {
+        Particle& p = object[i];
+        Vector2f temp_vel = Vector2f(p.velocity(0)/cellsize(0), p.velocity(1)/cellsize(1));
+        Vector2f new_pos = p.grid_position + TIMESTEP*temp_vel;
+        // LR
+        if (new_pos(0) < BSPLINE_RADIUS-1 || new_pos(0) > size(0)-BSPLINE_RADIUS)
+            p.velocity(0) = -STICKY*p.velocity(0);
+        // TB
+        if (new_pos(1) < BSPLINE_RADIUS-1 || new_pos(1) > size(1)-BSPLINE_RADIUS)
+            p.velocity(1) = -STICKY*p.velocity(1);
+
+    }

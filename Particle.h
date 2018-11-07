@@ -12,16 +12,11 @@ public:
     float volume, mass, density;
     Vector2f position, velocity;
     Matrix2f velocity_gradient;
-    // lame params
     float lambda, mu;
-    // deformation gradient
     Matrix2f def_elastic, def_plastic;
-    // cached svd's for elastic deformation gradient
     Matrix2f svd_w, svd_v;
     Vector2f svd_e;
-    // cached polar decomp
     Matrix2f polar_r, polar_s;
-    // grid interpolation weights
     Vector2f grid_position;
     Vector2f weight_gradient[16];
     float weights[16];
