@@ -6,6 +6,7 @@
 #define PARTIO_EXAMPLE_POISSON_H
 
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 #include <math.h>
 #include "Constants.h"
 #include "Particle.h"
@@ -14,12 +15,12 @@ using namespace std;
 
 class Poisson {
 public:
-    vector<Vector2f> grid;
+    vector<Vector2f, aligned_allocator<Eigen::Vector2f>> grid;
     int grid_width, grid_height;
     float cell_size;
     float radius;
     int k;
-    vector<Vector2f> active;
+    vector<Vector2f, aligned_allocator<Eigen::Vector2f>> active;
 
     Poisson(int grid_width, int grid_height, float radius, int k);
     virtual ~Poisson();

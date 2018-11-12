@@ -14,7 +14,7 @@ int main() {
 //    for (int time_step=0; time_step<MAX_TIMESTEP; time_step++){
 //
 //    }
-    Poisson poisson_sampler = Poisson(200, 200, 2.0, 30);
+    Poisson poisson_sampler = Poisson(20, 20, 2.0, 30);
     poisson_sampler.initGrid();
     poisson_sampler.sample();
     poisson_sampler.writePartio("poisson.bgeo");

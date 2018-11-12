@@ -55,7 +55,9 @@ void Poisson::sample() {
     int frame_num = 0;
 
     while (!active.empty()) {
-        cout << "loop num: " << frame_num << "\n";
+//        cout << "loop num: " << frame_num << "\n";
+        cout << "active length: " << active.size() << "\n";
+//        cout << "grid length: " << grid.size() << "\n";
         int rand_ind = idx_dist(mt);
         Vector2f active_pt = active[rand_ind];
         bool point_added = false;
