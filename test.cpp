@@ -55,6 +55,7 @@ void writePartio(const std::string& particleFile)
 
 int main() {
     std::string file="test";
+
     writePartio<T,dim>(file);
     return 0;
 }
