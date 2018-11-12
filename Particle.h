@@ -5,6 +5,7 @@
 #ifndef MPM_PARTICLE_H
 #define MPM_PARTICLE_H
 #include <Eigen/Dense>
+#include <Eigen/SVD>
 #include "Constants.h"
 using namespace Eigen;
 class Particle {

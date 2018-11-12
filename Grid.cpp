@@ -3,7 +3,6 @@
 //
 
 #include "Grid.h"
-
 Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object) {
     origin = Vector2f();
     origin(0) = pos(0);
@@ -16,6 +15,7 @@ Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZ
     nodes = new GridNode[nodes_length];
     node_area = cellsize(0)*cellsize(1);
     this->object = object;
+    TIMESTEP = 0.01;
 }
 
 Grid::~Grid() {
@@ -27,9 +27,11 @@ void Grid::initializeMass() {
     memset(nodes, 0, sizeof(GridNode)*nodes_length);
     for (int i=0; i<object.size(); i++) {
         Particle& p = object[i];
-        p.grid_position = (p.position - origin)/cellsize;
+        Vector2f particle_dist = p.position - origin;
+        p.grid_position(0) = particle_dist(0)/cellsize(0);
+        p.grid_position(1) = particle_dist(1)/cellsize(1);
         float ox = p.grid_position(0), oy = p.grid_position(1);
-        for (int idx=0, y=oy=1, y_end=y+3; y<=y_end; y++) {
+        for (int idx=0, y=oy-1, y_end=y+3; y<=y_end; y++) {
             float y_pos = oy-y, wy = Grid::bspline(y_pos), dy = Grid::bsplinePrime(y_pos);
             for (int x=ox-1, x_end=x+3; x<=x_end; x++, idx++) {
                 float x_pos = ox-x, wx = Grid::bspline(x_pos), dx = Grid::bsplinePrime(x_pos);
@@ -73,8 +75,8 @@ void Grid::calculateVolumes() const {
 }
 
 void Grid::calculateVelocities(const Vector2f &gravity) {
-    for (int i=0; i<obj->size; i++) {
-        Particle& p = obj->particles[i];
+    for (int i=0; i<object.size(); i++) {
+        Particle& p = object[i];
         Matrix2f energy = p.energyDerivative();
         int ox = p.grid_position[0], oy = p.grid_position[1];
         for (int idx=0, y=oy-1, y_end=y+3;  y<=y_end; y++) {
@@ -112,7 +114,7 @@ void Grid::updateVelocities() {
                     GridNode &node = nodes[(int) (y*size(0)+x)];
                     pic += node.force*w;
                     flip += (node.force - node.velocity)*w;
-                    grad += node.force * p.weight_gradient[idx];
+                    grad += node.force * p.weight_gradient[idx].transpose();
                 }
             }
         }
@@ -129,7 +131,10 @@ void Grid::collisionGrid() {
         for (int x=0; x<size(0); x++, idx++) {
             GridNode &node = nodes[idx];
             if (node.on) {
-                Vector2f new_pos = node.force*delta_scale+Vector2f(x, y);
+                Vector2f scaled_force;
+                scaled_force(0) = node.force(0)*delta_scale(0);
+                scaled_force(1) = node.force(1)*delta_scale(1);
+                Vector2f new_pos = scaled_force+Vector2f(x, y);
                 // LR
                 if (new_pos(0) < BSPLINE_RADIUS || new_pos(0) > size(0)-BSPLINE_RADIUS-1) {
                     node.force(0) = 0;
@@ -146,15 +151,16 @@ void Grid::collisionGrid() {
 }
 
 void Grid::collisionParticles() {
-    for (int i=0; i<object.size(); i++) {
-        Particle& p = object[i];
-        Vector2f temp_vel = Vector2f(p.velocity(0)/cellsize(0), p.velocity(1)/cellsize(1));
-        Vector2f new_pos = p.grid_position + TIMESTEP*temp_vel;
+    for (int i = 0; i < object.size(); i++) {
+        Particle &p = object[i];
+        Vector2f temp_vel = Vector2f(p.velocity(0) / cellsize(0), p.velocity(1) / cellsize(1));
+        Vector2f new_pos = p.grid_position + TIMESTEP * temp_vel;
         // LR
-        if (new_pos(0) < BSPLINE_RADIUS-1 || new_pos(0) > size(0)-BSPLINE_RADIUS)
-            p.velocity(0) = -STICKY*p.velocity(0);
+        if (new_pos(0) < BSPLINE_RADIUS - 1 || new_pos(0) > size(0) - BSPLINE_RADIUS)
+            p.velocity(0) = -STICKY * p.velocity(0);
         // TB
-        if (new_pos(1) < BSPLINE_RADIUS-1 || new_pos(1) > size(1)-BSPLINE_RADIUS)
-            p.velocity(1) = -STICKY*p.velocity(1);
+        if (new_pos(1) < BSPLINE_RADIUS - 1 || new_pos(1) > size(1) - BSPLINE_RADIUS)
+            p.velocity(1) = -STICKY * p.velocity(1);
 
     }
+}

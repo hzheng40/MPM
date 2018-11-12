@@ -25,5 +25,11 @@ void Particle::updateGradient() {
     def_elastic = velocity_gradient*def_elastic;
 }
 void Particle::applyPlasticity() {
+    Matrix2f f_all = def_elastic * def_plastic;
+    JacobiSVD<Matrix2f> svd(def_elastic, ComputeFullV | ComputeFullU);
+    def_elastic.svd(&svd_w, &svd_e, &svd_v);
+}
 
+const Matrix2f Particle::energyDerivative() {
+    float harden = exp()
 }

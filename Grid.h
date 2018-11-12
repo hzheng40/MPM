@@ -23,7 +23,7 @@ public:
     Vector2f origin, size, cellsize;
     array<Particle, TEST_SIZE> object;
     int nodes_length;
-    float node_area;
+    float node_area, TIMESTEP;
     GridNode* nodes; //start of grid nodes
 
     Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object);
