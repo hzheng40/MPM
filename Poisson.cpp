@@ -171,6 +171,8 @@ void Poisson::writePartioByFrame(const string& particle_file_prefix, int seq_num
     parts->release();
 }
 
+void Poisson::toSphere() {
+}
 //void Poisson::toObject(array& object) {
 //
 //}

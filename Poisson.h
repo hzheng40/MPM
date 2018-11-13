@@ -31,6 +31,7 @@ public:
     virtual ~Poisson();
     void initGrid();
     void sample();
+    void toSphere();
     void writePartio(const string& particle_file);
     void writePartioByFrame(const string& particle_file_prefix, int seq_num);
 };
