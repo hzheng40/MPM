@@ -39,12 +39,22 @@ void Grid::initializeMass() {
               pz_grid = static_cast<int>(p.grid_position(2));
 
         for (int idx = 0, x_offset=-1; x_offset <= 2; x_offset++) {
-
+            // x: column
+            float g_node_x  = (px_grid+x_offset) - p.grid_position(0);
+            float wx = Grid::bspline(g_node_x), dx = Grid::bsplinePrime(g_node_x);
             for (int y_offset=-1; y_offset <= 2; y_offset++) {
-
+                // y: row
+                float g_node_y = (py_grid+y_offset) - p.grid_position(1);
+                float wy = Grid::bspline(g_node_y), dy = Grid::bsplinePrime(g_node_y);
                 for (int z_offset=-1; z_offset <= 2; z_offset++, idx++) {
-
-                    
+                // z: depth
+                    float g_node_z = (pz_grid+z_offset) - p.grid_position(2);
+                    float wz = Grid::bspline(g_node_z), dz = Grid::bsplinePrime(g_node_z);
+                    // precomputing weight
+                    float weight = wx*wy*wz;
+                    p.weights[idx] = weight;
+                    p.weight_gradient[idx] = Vector3f((dx*wy*wz)/cellsize(0), (wx*dy*wz)/cellsize(1), (wx*wy*dz)/cellsize(2));
+//                    nodes[(int) ()]
                 }
             }
         }
