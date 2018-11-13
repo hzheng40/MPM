@@ -32,7 +32,7 @@ static const float
         GRAVITY = -9.8;
 
 //Actual timestep is adaptive, based on grid resolution and max velocity
-extern float TIMESTEP;
+//extern float TIMESTEP;
 
 //Hardening parameters
 static const float

@@ -3,7 +3,7 @@
 //
 
 #include "Grid.h"
-Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object) {
+Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, vector<Particle> object) {
     origin = Vector2f();
     origin(0) = pos(0);
     origin(1) = pos(1);
@@ -15,7 +15,8 @@ Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZ
     nodes = new GridNode[nodes_length];
     node_area = cellsize(0)*cellsize(1);
     this->object = object;
-    TIMESTEP = 0.01;
+    // timestep depends on grid resolution?
+    timestep = 0.01;
 }
 
 Grid::~Grid() {
@@ -93,7 +94,7 @@ void Grid::calculateVelocities(const Vector2f &gravity) {
     for (int i=0; i<nodes_length; i++) {
         GridNode &node = nodes[i];
         if (node.on) {
-            node.force = node.velocity + TIMESTEP*(gravity - node.force/node.mass);
+            node.force = node.velocity + timestep*(gravity - node.force/node.mass);
         }
     }
     collisionGrid();
@@ -124,7 +125,7 @@ void Grid::updateVelocities() {
 }
 
 void Grid::collisionGrid() {
-    Vector2f delta_scale = Vector2f(TIMESTEP, TIMESTEP);
+    Vector2f delta_scale = Vector2f(timestep, timestep);
     delta_scale(0) /= cellsize(0);
     delta_scale(1) /= cellsize(1);
     for (int y=0, idx=0; y<size(1); y++) {
@@ -154,7 +155,7 @@ void Grid::collisionParticles() {
     for (int i = 0; i < object.size(); i++) {
         Particle &p = object[i];
         Vector2f temp_vel = Vector2f(p.velocity(0) / cellsize(0), p.velocity(1) / cellsize(1));
-        Vector2f new_pos = p.grid_position + TIMESTEP * temp_vel;
+        Vector2f new_pos = p.grid_position + timestep * temp_vel;
         // LR
         if (new_pos(0) < BSPLINE_RADIUS - 1 || new_pos(0) > size(0) - BSPLINE_RADIUS)
             p.velocity(0) = -STICKY * p.velocity(0);

@@ -1,12 +1,7 @@
 //
 // Created by billyzheng on 11/11/18.
 //
-
 #include "Poisson.h"
-#include "Partio.h"
-#include <random>
-#include <iostream>
-
 Poisson::Poisson(int grid_width, int grid_height, int grid_depth, float radius, int k) {
     for (int i=0; i<grid_width*grid_height*grid_depth; i++) grid.push_back(Vector3f(-1.0, -1.0, -1.0));
     this->grid_width = grid_width;
@@ -153,6 +148,25 @@ void Poisson::writePartio(const string& particle_file) {
     parts->release();
 }
 
+void Poisson::writePartioByObejct(const string &particle_file,
+                                  vector<Vector3f, aligned_allocator<Vector3f>> object_file){
+    Partio::ParticlesDataMutable *parts = Partio::create();
+    Partio::ParticleAttribute posH;
+    posH = parts->addAttribute("position", Partio::VECTOR, 3);
+    for (int i=0; i<object_file.size(); i++) {
+        Vector3f pt = object_file[i];
+        if (pt(0) >= 0 && pt(1) >= 0 && pt(2) >= 0) {
+            int idx = parts->addParticle();
+            float *p = parts->dataWrite<float>(posH, idx);
+            p[0] = pt(0);
+            p[1] = pt(1);
+            p[2] = pt(2);
+        }
+    }
+    Partio::write(particle_file.c_str(), *parts);
+    parts->release();
+}
+
 void Poisson::writePartioByFrame(const string& particle_file_prefix, int seq_num) {
     Partio::ParticlesDataMutable *parts = Partio::create();
     Partio::ParticleAttribute posH;
@@ -171,8 +185,23 @@ void Poisson::writePartioByFrame(const string& particle_file_prefix, int seq_num
     parts->release();
 }
 
-void Poisson::toSphere() {
+vector<Vector3f, aligned_allocator<Vector3f>> Poisson::toSphere() {
+    vector<Vector3f, aligned_allocator<Vector3f>> sphere_grid;
+    float sphere_r = min(min(grid_width, grid_height), grid_depth) / 2.0;
+    Vector3f sphere_c = Vector3f(grid_width/2.0, grid_height/2.0, grid_depth/2.0);
+    for (int i=0; i<grid_width*grid_height*grid_depth; i++) {
+        Vector3f curr_pt = grid[i];
+        float dist = pow((curr_pt(0)-sphere_c(0)), 2) + pow((curr_pt(1)-sphere_c(1)), 2) + pow((curr_pt(2)-sphere_c(2)), 2);
+        if (dist <= pow(sphere_r, 2)) {
+            sphere_grid.push_back(curr_pt);
+        }
+    }
+    return sphere_grid;
 }
-//void Poisson::toObject(array& object) {
-//
-//}
+vector<Particle> Poisson::toObject(vector<Vector3f, aligned_allocator<Vector3f>> object) {
+    for (int i=0; i<object.size(); i++) {
+        Vector3f point = object[i];
+        // create a particle for each point in pointcloud
+//        Particle particle = Particle(point, Vector3f::Zero, 1.0, )
+    }
+}

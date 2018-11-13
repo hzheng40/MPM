@@ -5,21 +5,22 @@
 #include "Particle.h"
 using namespace Eigen;
 Particle::Particle() {}
-Particle::Particle(const Vector2f &pos, const Vector2f &vel, float mass, float lambda, float mu) {
+Particle::Particle(const Vector2f &pos, const Vector2f &vel, float mass, float lambda, float mu, float timestep) {
     // load particle properties
     position = pos;
     velocity = vel;
     this->mass = mass;
     this->lambda = lambda;
     this->mu = mu;
+    this->timestep = timestep;
 
 }
 Particle::~Particle(){}
 void Particle::updatePos() {
-    position += TIMESTEP*velocity;
+    position += timestep*velocity;
 }
 void Particle::updateGradient() {
-    velocity_gradient *= TIMESTEP;
+    velocity_gradient *= timestep;
     DiagonalMatrix<float, 2> m(1,1);
     velocity_gradient += m;
     def_elastic = velocity_gradient*def_elastic;

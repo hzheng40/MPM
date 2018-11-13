@@ -15,18 +15,17 @@ typedef struct GridNode {
     float mass;
     bool on;
     Vector2f velocity, force;
-
 } GridNode;
 
 class Grid {
 public:
     Vector2f origin, size, cellsize;
-    array<Particle, TEST_SIZE> object;
+    vector<Particle> object;
     int nodes_length;
-    float node_area, TIMESTEP;
+    float node_area, timestep;
     GridNode* nodes; //start of grid nodes
 
-    Grid(Vector2f pos, Vector2f dims, Vector2f cells, array<Particle, TEST_SIZE> object);
+    Grid(Vector2f pos, Vector2f dims, Vector2f cells, vector<Particle> object);
     virtual ~Grid();
     // particles to grid
     void initializeMass();

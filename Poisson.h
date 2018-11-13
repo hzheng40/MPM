@@ -13,6 +13,9 @@
 #include <math.h>
 #include "Constants.h"
 #include "Particle.h"
+#include "Partio.h"
+#include <random>
+#include <iostream>
 using namespace Eigen;
 using namespace std;
 
@@ -31,8 +34,10 @@ public:
     virtual ~Poisson();
     void initGrid();
     void sample();
-    void toSphere();
+    vector<Vector3f, aligned_allocator<Vector3f>> toSphere();
+    vector<Particle> toObject(vector<Vector3f, aligned_allocator<Vector3f>>);
     void writePartio(const string& particle_file);
+    void writePartioByObejct(const string& particle_file, vector<Vector3f, aligned_allocator<Vector3f>> object_file);
     void writePartioByFrame(const string& particle_file_prefix, int seq_num);
 };
 #endif //PARTIO_EXAMPLE_POISSON_H
