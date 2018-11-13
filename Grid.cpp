@@ -3,17 +3,19 @@
 //
 
 #include "Grid.h"
-Grid::Grid(Vector2f pos, Vector2f dims, Vector2f cells, vector<Particle> object) {
-    origin = Vector2f();
+Grid::Grid(Vector3f pos, Vector3f dims, Vector3f cell_num, vector<Particle> object) {
+    origin = Vector3f();
     origin(0) = pos(0);
     origin(1) = pos(1);
-    cellsize = Vector2f();
-    cellsize(0) = dims(0)/cells(0);
-    cellsize(1) = dims(1)/cells(1);
-    size = cells + Vector2f::Ones();
-    nodes_length = size(0)*size(1);
+    origin(2) = pos(2);
+    cellsize = Vector3f();
+    cellsize(0) = dims(0)/cell_num(0);
+    cellsize(1) = dims(1)/cell_num(1);
+    cellsize(2) = dims(2)/cell_num(2);
+    size = cell_num + Vector3f::Ones();
+    nodes_length = size(0)*size(1)*size(2);
     nodes = new GridNode[nodes_length];
-    node_area = cellsize(0)*cellsize(1);
+    node_volume = cellsize(0)*cellsize(1)*cellsize(2);
     this->object = object;
     // timestep depends on grid resolution?
     timestep = 0.01;
@@ -28,9 +30,28 @@ void Grid::initializeMass() {
     memset(nodes, 0, sizeof(GridNode)*nodes_length);
     for (int i=0; i<object.size(); i++) {
         Particle& p = object[i];
-        Vector2f particle_dist = p.position - origin;
+        Vector3f particle_dist = p.position - origin;
         p.grid_position(0) = particle_dist(0)/cellsize(0);
         p.grid_position(1) = particle_dist(1)/cellsize(1);
+        p.grid_position(2) = particle_dist(2)/cellsize(2);
+        float px_grid = static_cast<int>(p.grid_position(0)),
+              py_grid = static_cast<int>(p.grid_position(1)),
+              pz_grid = static_cast<int>(p.grid_position(2));
+
+        for (int idx = 0, x_offset=-1; x_offset <= 2; x_offset++) {
+
+            for (int y_offset=-1; y_offset <= 2; y_offset++) {
+
+                for (int z_offset=-1; z_offset <= 2; z_offset++, idx++) {
+
+                    
+                }
+            }
+        }
+
+
+
+
         float ox = p.grid_position(0), oy = p.grid_position(1);
         for (int idx=0, y=oy-1, y_end=y+3; y<=y_end; y++) {
             float y_pos = oy-y, wy = Grid::bspline(y_pos), dy = Grid::bsplinePrime(y_pos);

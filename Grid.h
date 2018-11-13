@@ -6,6 +6,7 @@
 #define MPM_GRID_H
 
 #include <Eigen/Dense>
+#include <vector>
 #include "Constants.h"
 #include "Particle.h"
 using namespace Eigen;
@@ -14,18 +15,18 @@ typedef struct GridNode {
     // explicit
     float mass;
     bool on;
-    Vector2f velocity, force;
+    Vector3f velocity, force;
 } GridNode;
 
 class Grid {
 public:
-    Vector2f origin, size, cellsize;
+    Vector3f origin, size, cellsize;
     vector<Particle> object;
     int nodes_length;
-    float node_area, timestep;
+    float node_volume, timestep;
     GridNode* nodes; //start of grid nodes
 
-    Grid(Vector2f pos, Vector2f dims, Vector2f cells, vector<Particle> object);
+    Grid(Vector3f pos, Vector3f dims, Vector3f cell_num, vector<Particle> object);
     virtual ~Grid();
     // particles to grid
     void initializeMass();

@@ -19,8 +19,9 @@ public:
     Vector2f svd_e;
     Matrix2f polar_r, polar_s;
     Vector2f grid_position;
-    Vector2f weight_gradient[16];
-    float weights[16];
+    // 64 in 3d (4x4x4)
+    Vector2f weight_gradient[64];
+    float weights[64];
     Particle();
     Particle(const Vector2f& pos, const Vector2f& vel, float mass, float lambda, float mu, float timestep);
     virtual ~Particle();
