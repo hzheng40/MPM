@@ -10,7 +10,7 @@ using namespace Eigen;
 const float BSPLINE_EPSILON = 1e-4;
 const int BSPLINE_RADIUS = 2;
 static const int
-        MAX_TIMESTEP = 100,
+        MAX_TIMESTEP = 1,
         TEST_SIZE = 100;
 static const float
         PT_MASS = 0.1,

@@ -29,6 +29,28 @@ void Particle::updateGradient() {
 void Particle::applyPlasticity() {
     Matrix3f f_all = def_elastic * def_plastic;
     JacobiSVD<Matrix3f> svd(def_elastic, ComputeFullV | ComputeFullU);
+    Vector3f val_singular = svd.singularValues();
+    Matrix3f u = svd.matrixU();
+    Matrix3f v = svd.matrixV();
+    // clamp singular value to elastic
+    for (int i = 0; i<3; i++) {
+        float sig = val_singular(i);
+        if (sig < CRIT_COMPRESS) val_singular(i) = CRIT_COMPRESS;
+        else if (sig > CRIT_STRETCH) val_singular(i) = CRIT_STRETCH;
+    }
+    Matrix3f v_copy(v), u_copy(u);
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            v_copy(i,j) /= val_singular(i);
+        }
+    }
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            u_copy(i,j) *= val_singular(i);
+        }
+    }
+    def_plastic = v_copy * u.transpose() * f_all;
+    def_elastic = u_copy * v.transpose();
 }
 
 const Matrix3f Particle::energyDerivative() {

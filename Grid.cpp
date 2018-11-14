@@ -135,8 +135,8 @@ void Grid::g2p_vel() {
         Matrix3f &grad = p.velocity_gradient;
         grad = grad.setZero();
         int px_grid = static_cast<int>(p.grid_position(0)),
-                py_grid = static_cast<int>(p.grid_position(1)),
-                pz_grid = static_cast<int>(p.grid_position(2));
+            py_grid = static_cast<int>(p.grid_position(1)),
+            pz_grid = static_cast<int>(p.grid_position(2));
         for (int idx = 0, x_offset = -1; x_offset <= 2; x_offset++) {
             for (int y_offset = -1; y_offset <= 2; y_offset++) {
                 for (int z_offset = -1; z_offset <= 2; z_offset++, idx++) {
@@ -153,6 +153,7 @@ void Grid::g2p_vel() {
                 }
             }
         }
+        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
     }
     collisionParticles();
 }
