@@ -13,6 +13,7 @@ static const int
         MAX_TIMESTEP = 100,
         TEST_SIZE = 100;
 static const float
+        PT_MASS = 0.1,
         PARTICLE_DIAM = .0072,		//Diameter of each particle; smaller = higher resolution
         FRAMERATE = 1/60.0,			//Frames per second
         CFL = .04,					//Adaptive timestep adjustment
@@ -29,7 +30,8 @@ static const float
         MAX_IMPLICIT_ERR = 1e4,		//Maximum allowed error for conjugate residual
         MIN_IMPLICIT_ERR = 1e-4,	//Minimum allowed error for conjugate residual
         STICKY = .9,				//Collision stickiness (lower = stickier)
-        GRAVITY = -9.8;
+        GRAVITY = -9.8,
+        TIMESTEP = 0.01;
 
 //Actual timestep is adaptive, based on grid resolution and max velocity
 //extern float TIMESTEP;

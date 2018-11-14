@@ -15,7 +15,7 @@ typedef struct GridNode {
     // explicit
     float mass;
     bool on;
-    Vector3f velocity, force;
+    Vector3f velocity, new_velocity;
 } GridNode;
 
 class Grid {
@@ -29,11 +29,10 @@ public:
     Grid(Vector3f pos, Vector3f dims, Vector3f cell_num, vector<Particle> object);
     virtual ~Grid();
     // particles to grid
-    void initializeMass();
-    void initilaizeVelocities();
-    void calculateVolumes() const;
-    void calculateVelocities(const Vector2f &gravity);
-    void updateVelocities();
+    void initialize();
+    void calculateVolumes();
+    void p2g_vel(const Vector3f &gravity);
+    void g2p_vel();
     // collision
     void collisionGrid();
     void collisionParticles();
