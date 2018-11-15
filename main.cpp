@@ -1,5 +1,6 @@
 #include <Partio.h>
 #include <Eigen/Dense>
+#include <iostream>
 #include "Constants.h"
 #include "Particle.h"
 #include "Grid.h"
@@ -34,17 +35,19 @@ int main() {
     cout << "particle in list now" << "\n";
     // make grid
     Grid grid(Vector3f(-100.0,-100.0,-100.0), Vector3f(200.0,200.0,200.0), Vector3f(200.0,200.0,200.0), part_list);
-    grid.initialize();
+    grid.initializeMass();
     grid.calculateVolumes();
     Vector3f gravity = Vector3f(0, 0, GRAVITY);
     // main MPM loop
     for (float time_step=0; time_step<MAX_TIMESTEP; time_step+=TIMESTEP) {
         int frame_num = static_cast<int> (time_step / TIMESTEP);
-        grid.initialize();
+        cout << "current frame number: " << frame_num << "\n";
+        grid.initializeMass();
+        grid.initializeVel();
         grid.p2g_vel(gravity);
         grid.g2p_vel();
-        for (int i=0; i<part_list.size(); i++) {
-            Particle &part = part_list[i];
+        for (int i=0; i<grid.object.size(); i++) {
+            Particle &part = grid.object[i];
             part.updatePos();
             part.updateGradient();
             part.applyPlasticity();

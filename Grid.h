@@ -30,6 +30,8 @@ public:
     virtual ~Grid();
     // particles to grid
     void initialize();
+    void initializeMass();
+    void initializeVel();
     void calculateVolumes();
     void p2g_vel(const Vector3f &gravity);
     void g2p_vel();

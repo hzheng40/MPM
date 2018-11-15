@@ -3,6 +3,7 @@
 //
 
 #include "Particle.h"
+#include <iostream>
 using namespace Eigen;
 Particle::Particle() {}
 Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float mu, float timestep) {
@@ -19,7 +20,8 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
 }
 Particle::~Particle(){}
 void Particle::updatePos() {
-    position += timestep*velocity;
+    Vector3f change = timestep*velocity;
+    position += change;
 }
 void Particle::updateGradient() {
     velocity_gradient *= timestep;

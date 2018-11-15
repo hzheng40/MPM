@@ -203,8 +203,14 @@ vector<Particle> Poisson::toObject(vector<Vector3f, aligned_allocator<Vector3f>>
     for (int i=0; i<object.size(); i++) {
         Vector3f point = object[i];
         // create a particle for each point in pointcloud
-        Particle particle = Particle(point, Vector3f::Zero(), PT_MASS, LAMBDA, MU, TIMESTEP);
-        part_list.push_back(particle);
+        if (point(0) >= 0 && point(0) < grid_width
+            && point(1) >= 0 && point(1) < grid_height
+            && point(2) >= 0 && point(2) < grid_depth) {
+            Particle particle = Particle(point, Vector3f::Zero(), PT_MASS, LAMBDA, MU, TIMESTEP);
+            part_list.push_back(particle);
+        } else {
+            cout << "skipping \n";
+        }
     }
     return part_list;
 }

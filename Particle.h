@@ -8,6 +8,7 @@
 #include <Eigen/SVD>
 #include "Constants.h"
 using namespace Eigen;
+using namespace std;
 class Particle {
 public:
     float volume, mass, density;
