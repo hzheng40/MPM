@@ -28,10 +28,11 @@ Grid::~Grid() {
 
 // map particle mass to grid
 void Grid::initializeMass() {
-    for (int i=0; i<nodes_length; i++) {
-        GridNode &node = nodes[i];
-        node.mass = 0.0;
-    }
+//    for (int i=0; i<nodes_length; i++) {
+//        GridNode &node = nodes[i];
+//        node.mass = 0.0;
+//    }
+    memset(nodes, 0, sizeof(GridNode)*nodes_length);
     for (int i=0; i<object.size(); i++) {
         Particle &p = object[i];
         Vector3f particle_dist = p.position - origin;
@@ -39,8 +40,8 @@ void Grid::initializeMass() {
         p.grid_position(1) = particle_dist(1) / cellsize(1);
         p.grid_position(2) = particle_dist(2) / cellsize(2);
         int px_grid = static_cast<int>(p.grid_position(0)),
-                py_grid = static_cast<int>(p.grid_position(1)),
-                pz_grid = static_cast<int>(p.grid_position(2));
+            py_grid = static_cast<int>(p.grid_position(1)),
+            pz_grid = static_cast<int>(p.grid_position(2));
         for (int idx = 0, x_offset = -1; x_offset <= 2; x_offset++) {
             // x: column
             float g_node_x = (px_grid + x_offset) - p.grid_position(0);
@@ -62,10 +63,14 @@ void Grid::initializeMass() {
                     // compute grid mass
                     int x = px_grid + x_offset, y = py_grid + y_offset, z = pz_grid + z_offset;
                     if (x<0 || x>size(0)-1 || y<0 || y>size(1)-1 || z<0 || z>size(2)-1) {
-                        // TODO: prolly not correct to continue
+                        // if corresponding node index out of bounds just ignore
                         continue;
                     }
-                    nodes[(int) (y * size(0) + x + z * size(0) * size(1))].mass += weight * p.mass;
+                    if (weight > BSPLINE_EPSILON) {
+                        nodes[(int) (y * size(0) + x + z * size(0) * size(1))].mass += weight * p.mass;
+                    } else {
+                        nodes[(int) (y * size(0) + x + z * size(0) * size(1))].mass = 0.0;
+                    }
                 }
             }
         }
@@ -90,23 +95,21 @@ void Grid::initializeVel() {
                     if (w > BSPLINE_EPSILON) {
                         int x = px_grid+x_offset, y = py_grid+y_offset, z = pz_grid+z_offset;
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
-                        nodes[ind].velocity += p.velocity * w * p.mass;
+                        float node_mass = nodes[ind].mass;
+                        // conservation of momentum
+                        nodes[ind].velocity(0) += p.velocity(0) * w * p.mass / node_mass;
+                        nodes[ind].velocity(1) += p.velocity(1) * w * p.mass / node_mass;
+                        nodes[ind].velocity(2) += p.velocity(2) * w * p.mass / node_mass;
                         nodes[ind].on = true;
                     }
                 }
             }
         }
     }
-    for (int i = 0; i < nodes_length; i++) {
-        GridNode &node = nodes[i];
-        if (node.on) {
-            node.velocity /= node.mass;
-        }
-    }
     collisionGrid();
 }
 
-// initializing grid mass from original particles, only ran once at the beginning
+// initializing grid mass from original particles, only ran once at the beginning?
 void Grid::initialize() {
 //    memset(nodes, 0, sizeof(GridNode)*nodes_length);
     for (int i=0; i<object.size(); i++) {
@@ -155,7 +158,7 @@ void Grid::initialize() {
     collisionGrid();
 }
 
-// volumn from grid to particles, ran once at the start
+// volumn from grid to particles, ran once at the start, for implicit
 void Grid::calculateVolumes() {
     for (int i=0; i<object.size(); i++) {
         Particle& p = object[i];
@@ -182,6 +185,7 @@ void Grid::calculateVolumes() {
 void Grid::p2g_vel(const Vector3f &gravity) {
     for (int i = 0; i < object.size(); i++) {
         Particle &p = object[i];
+
         Matrix3f energy = p.energyDerivative();
         int px_grid = static_cast<int>(p.grid_position(0)),
                 py_grid = static_cast<int>(p.grid_position(1)),
@@ -193,17 +197,19 @@ void Grid::p2g_vel(const Vector3f &gravity) {
                     float w = p.weights[idx];
                     if (w > BSPLINE_EPSILON) {
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
-                        nodes[ind].new_velocity += energy * p.weight_gradient[idx];
+                        nodes[ind].grid_forces += energy * p.weight_gradient[idx];
                     }
                 }
             }
         }
+
     }
 
     for (int i = 0; i < nodes_length; i++) {
         GridNode &node = nodes[i];
         if (node.on) {
-            node.new_velocity = node.velocity + timestep * (gravity - node.new_velocity / node.mass);
+            // new velocity also stored in grid_forces
+            node.grid_forces = node.velocity + timestep * (gravity - node.grid_forces / node.mass);
         }
     }
     collisionGrid();
@@ -212,10 +218,15 @@ void Grid::p2g_vel(const Vector3f &gravity) {
 // g2p
 void Grid::g2p_vel() {
     for (int i = 0; i < object.size(); i++) {
+
         Particle &p = object[i];
-        Vector3f pic, flip = p.velocity;
-        Matrix3f &grad = p.velocity_gradient;
-        grad = grad.setZero();
+
+        Vector3f pic, flip = Vector3f(0.0, 0.0, 0.0);
+//        Matrix3f &grad = p.velocity_gradient;
+//        grad = grad.setZero();
+        p.velocity.setZero();
+        p.velocity_gradient.setZero();
+        p.density = 0.0;
         int px_grid = static_cast<int>(p.grid_position(0)),
             py_grid = static_cast<int>(p.grid_position(1)),
             pz_grid = static_cast<int>(p.grid_position(2));
@@ -227,15 +238,17 @@ void Grid::g2p_vel() {
                     if (w > BSPLINE_EPSILON) {
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
                         GridNode &node = nodes[ind];
-                        pic += node.new_velocity*w;
-                        flip += (node.new_velocity - node.velocity)*w;
+                        p.velocity += node.grid_forces*w;
+//                        flip += (node.grid_forces - node.velocity)*w;
                         // grad is outer product
-                        grad += node.new_velocity * p.weight_gradient[idx].transpose();
+                        p.velocity_gradient += node.grid_forces * p.weight_gradient[idx].transpose();
+                        p.density += w*node.mass/node_volume;
                     }
                 }
             }
         }
-        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
+//        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
+//        p.density /= node_volume;
 //        float vel_x = p.velocity(0);
 //        float vel_y = p.velocity(1);
 //        float vel_z = p.velocity(2);
@@ -255,28 +268,29 @@ void Grid::collisionGrid() {
             for (int z=0; z<size(2); z++, idx++) {
                 GridNode &node = nodes[idx];
                 if (node.on) {
+
                     Vector3f scaled_velocity;
-                    scaled_velocity(0) = node.new_velocity(0) * delta_scale(0);
-                    scaled_velocity(1) = node.new_velocity(1) * delta_scale(1);
-                    scaled_velocity(2) = node.new_velocity(2) * delta_scale(2);
+                    scaled_velocity(0) = node.grid_forces(0) * delta_scale(0);
+                    scaled_velocity(1) = node.grid_forces(1) * delta_scale(1);
+                    scaled_velocity(2) = node.grid_forces(2) * delta_scale(2);
                     Vector3f new_pos = scaled_velocity + Vector3f(x, y, z);
                     // Left Right
                     if (new_pos(0) < BSPLINE_RADIUS || new_pos(0) > size(0) - BSPLINE_RADIUS - 1) {
-                        node.new_velocity(0) = 0;
-                        node.new_velocity(1) *= STICKY;
-                        node.new_velocity(2) *= STICKY;
+                        node.grid_forces(0) = 0;
+                        node.grid_forces(1) *= STICKY;
+                        node.grid_forces(2) *= STICKY;
                     }
                     // Top Bottom
                     if (new_pos(1) < BSPLINE_RADIUS || new_pos(1) > size(1) - BSPLINE_RADIUS - 1) {
-                        node.new_velocity(1) = 0;
-                        node.new_velocity(0) *= STICKY;
-                        node.new_velocity(2) *= STICKY;
+                        node.grid_forces(1) = 0;
+                        node.grid_forces(0) *= STICKY;
+                        node.grid_forces(2) *= STICKY;
                     }
                     // Front Back
                     if (new_pos(2) < BSPLINE_RADIUS || new_pos(2) > size(2) - BSPLINE_RADIUS - 1) {
-                        node.new_velocity(2) = 0;
-                        node.new_velocity(0) *= STICKY;
-                        node.new_velocity(1) *= STICKY;
+                        node.grid_forces(2) = 0;
+                        node.grid_forces(0) *= STICKY;
+                        node.grid_forces(1) *= STICKY;
                     }
                 }
             }

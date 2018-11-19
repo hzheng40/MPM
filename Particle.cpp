@@ -21,6 +21,9 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
 Particle::~Particle(){}
 void Particle::updatePos() {
     Vector3f change = timestep*velocity;
+    if (isnan(change(0)) || isnan(change(1)) || isnan(change(2))) {
+        return;
+    }
     position += change;
 }
 void Particle::updateGradient() {

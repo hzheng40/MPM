@@ -18,7 +18,7 @@ static const float
         FRAMERATE = 1/60.0,			//Frames per second
         CFL = .04,					//Adaptive timestep adjustment
 //        MAX_TIMESTEP = 5e-4,		//Upper timestep limit
-        FLIP_PERCENT = .95,			//Weight to give FLIP update over PIC (.95)
+        FLIP_PERCENT = 0.0,			//Weight to give FLIP update over PIC (.95)
         CRIT_COMPRESS = 1-1.9e-2,	//Fracture threshold for compression (1-2.5e-2)
         CRIT_STRETCH = 1+7.5e-3,	//Fracture threshold for stretching (1+7.5e-3)
         HARDENING = 5.0,			//How much plastic deformation strengthens material (10)

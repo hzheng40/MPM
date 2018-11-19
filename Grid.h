@@ -15,7 +15,7 @@ typedef struct GridNode {
     // explicit
     float mass;
     bool on;
-    Vector3f velocity, new_velocity;
+    Vector3f velocity, grid_forces;
 } GridNode;
 
 class Grid {
