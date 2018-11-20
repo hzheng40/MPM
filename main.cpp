@@ -37,7 +37,7 @@ int main() {
     Grid grid(Vector3f(-50.0,-50.0,-50.0), Vector3f(150.0,150.0,150.0), Vector3f(200.0,200.0,200.0), part_list);
     grid.initializeMass();
     // implicit only
-//    grid.calculateVolumes();
+    grid.calculateVolumes();
     Vector3f gravity = Vector3f(0, 0, GRAVITY);
     // main MPM loop
     for (float time_step=0; time_step<MAX_TIMESTEP; time_step+=TIMESTEP) {
@@ -49,7 +49,7 @@ int main() {
         for (int i=0; i<grid.object.size(); i++) {
             Particle &part = grid.object[i];
             part.updateGradient();
-            part.applyPlasticity();
+//            part.applyPlasticity();
         }
         grid.g2p_vel();
         for (int i=0; i<grid.object.size(); i++) {

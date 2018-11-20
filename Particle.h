@@ -16,8 +16,8 @@ public:
     Matrix3f velocity_gradient;
     float lambda, mu, timestep;
     Matrix3f def_elastic, def_plastic;
-    Matrix3f svd_w, svd_v;
-    Vector3f svd_e;
+    Matrix3f svd_u, svd_v;
+    Vector3f svd_s;
     Vector3f grid_position;
     // 64 in 3d (4x4x4)
     Vector3f weight_gradient[64];

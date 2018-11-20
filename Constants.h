@@ -31,7 +31,7 @@ static const float
         MIN_IMPLICIT_ERR = 1e-4,	//Minimum allowed error for conjugate residual
         STICKY = .9,				//Collision stickiness (lower = stickier)
         GRAVITY = -9.8,
-        TIMESTEP = 0.0005;
+        TIMESTEP = 0.005;
 
 //Actual timestep is adaptive, based on grid resolution and max velocity
 //extern float TIMESTEP;

@@ -94,6 +94,10 @@ void Grid::initializeVel() {
                     float w = p.weights[idx];
                     if (w > BSPLINE_EPSILON) {
                         int x = px_grid+x_offset, y = py_grid+y_offset, z = pz_grid+z_offset;
+                        if (x<0 || x>size(0)-1 || y<0 || y>size(1)-1 || z<0 || z>size(2)-1) {
+                            // if corresponding node index out of bounds just ignore
+                            continue;
+                        }
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
                         float node_mass = nodes[ind].mass;
                         // conservation of momentum
@@ -170,6 +174,10 @@ void Grid::calculateVolumes() {
             for (int y_offset = -1; y_offset <= 2; y_offset++) {
                 for (int z_offset = -1; z_offset <= 2; z_offset++, idx++) {
                     int x = px_grid+x_offset, y = py_grid+y_offset, z = pz_grid+z_offset;
+                    if (x<0 || x>size(0)-1 || y<0 || y>size(1)-1 || z<0 || z>size(2)-1) {
+                        // if corresponding node index out of bounds just ignore
+                        continue;
+                    }
                     float w = p.weights[idx];
                     if (w > BSPLINE_EPSILON) {
                         p.density += w*nodes[static_cast<int>(y*size(0)+x+z*size(0)*size(1))].mass;
@@ -194,15 +202,22 @@ void Grid::p2g_vel(const Vector3f &gravity) {
             for (int y_offset = -1; y_offset <= 2; y_offset++) {
                 for (int z_offset = -1; z_offset <= 2; z_offset++, idx++) {
                     int x = px_grid + x_offset, y = py_grid + y_offset, z = pz_grid + z_offset;
+                    if (x<0 || x>size(0)-1 || y<0 || y>size(1)-1 || z<0 || z>size(2)-1) {
+                        // if corresponding node index out of bounds just ignore
+                        continue;
+                    }
                     float w = p.weights[idx];
                     if (w > BSPLINE_EPSILON) {
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
-                        nodes[ind].grid_forces += energy * p.weight_gradient[idx];
+                        nodes[ind].grid_forces -= energy * p.weight_gradient[idx];
                     }
                 }
             }
         }
-
+//        float vel_x = p.velocity(0);
+//        float vel_y = p.velocity(1);
+//        float vel_z = p.velocity(2);
+//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
     }
 
     for (int i = 0; i < nodes_length; i++) {
@@ -221,19 +236,35 @@ void Grid::g2p_vel() {
 
         Particle &p = object[i];
 
-        Vector3f pic, flip = Vector3f(0.0, 0.0, 0.0);
+//        float vel_x = p.velocity(0);
+//        float vel_y = p.velocity(1);
+//        float vel_z = p.velocity(2);
+//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+
+//        Vector3f pic, flip = Vector3f(0.0, 0.0, 0.0);
 //        Matrix3f &grad = p.velocity_gradient;
 //        grad = grad.setZero();
         p.velocity.setZero();
+
+//        float vel_x = p.velocity(0);
+//        float vel_y = p.velocity(1);
+//        float vel_z = p.velocity(2);
+//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+
         p.velocity_gradient.setZero();
         p.density = 0.0;
         int px_grid = static_cast<int>(p.grid_position(0)),
             py_grid = static_cast<int>(p.grid_position(1)),
             pz_grid = static_cast<int>(p.grid_position(2));
+
         for (int idx = 0, x_offset = -1; x_offset <= 2; x_offset++) {
             for (int y_offset = -1; y_offset <= 2; y_offset++) {
                 for (int z_offset = -1; z_offset <= 2; z_offset++, idx++) {
                     int x = px_grid + x_offset, y = py_grid + y_offset, z = pz_grid + z_offset;
+                    if (x<0 || x>size(0)-1 || y<0 || y>size(1)-1 || z<0 || z>size(2)-1) {
+                        // if corresponding node index out of bounds just ignore
+                        continue;
+                    }
                     float w = p.weights[idx];
                     if (w > BSPLINE_EPSILON) {
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
@@ -259,36 +290,35 @@ void Grid::g2p_vel() {
 
 
 void Grid::collisionGrid() {
-    Vector3f delta_scale = Vector3f(timestep, timestep, timestep);
-    delta_scale(0) /= cellsize(0);
-    delta_scale(1) /= cellsize(1);
-    delta_scale(2) /= cellsize(2);
+//    Vector3f delta_t = Vector3f(timestep/cellsize(0), timestep/cellsize(1), timestep/cellsize(2));
+    Vector3f delta_t = Vector3f(timestep, timestep, timestep);
     for (int y=0, idx=0; y<size(1); y++) {
         for (int x=0; x<size(0); x++) {
             for (int z=0; z<size(2); z++, idx++) {
                 GridNode &node = nodes[idx];
+//                float vel_x = node.velocity(0);
+//                float vel_y = node.velocity(1);
+//                float vel_z = node.velocity(2);
+//                cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
                 if (node.on) {
-
-                    Vector3f scaled_velocity;
-                    scaled_velocity(0) = node.grid_forces(0) * delta_scale(0);
-                    scaled_velocity(1) = node.grid_forces(1) * delta_scale(1);
-                    scaled_velocity(2) = node.grid_forces(2) * delta_scale(2);
-                    Vector3f new_pos = scaled_velocity + Vector3f(x, y, z);
+                    Vector3f new_pos = Vector3f(node.grid_forces(0)*delta_t(0)+x,
+                                                node.grid_forces(1)*delta_t(1)+y,
+                                                node.grid_forces(2)*delta_t(2)+z);
                     // Left Right
                     if (new_pos(0) < BSPLINE_RADIUS || new_pos(0) > size(0) - BSPLINE_RADIUS - 1) {
-                        node.grid_forces(0) = 0;
+                        node.grid_forces(0) = 0.0;
                         node.grid_forces(1) *= STICKY;
                         node.grid_forces(2) *= STICKY;
                     }
                     // Top Bottom
                     if (new_pos(1) < BSPLINE_RADIUS || new_pos(1) > size(1) - BSPLINE_RADIUS - 1) {
-                        node.grid_forces(1) = 0;
+                        node.grid_forces(1) = 0.0;
                         node.grid_forces(0) *= STICKY;
                         node.grid_forces(2) *= STICKY;
                     }
                     // Front Back
                     if (new_pos(2) < BSPLINE_RADIUS || new_pos(2) > size(2) - BSPLINE_RADIUS - 1) {
-                        node.grid_forces(2) = 0;
+                        node.grid_forces(2) = 0.0;
                         node.grid_forces(0) *= STICKY;
                         node.grid_forces(1) *= STICKY;
                     }
@@ -301,6 +331,12 @@ void Grid::collisionGrid() {
 void Grid::collisionParticles() {
     for (int i = 0; i < object.size(); i++) {
         Particle &p = object[i];
+
+//        float vel_x = p.velocity(0);
+//        float vel_y = p.velocity(1);
+//        float vel_z = p.velocity(2);
+//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+
         Vector3f temp_vel = Vector3f(p.velocity(0)/cellsize(0), p.velocity(1)/cellsize(1), p.velocity(2)/cellsize(2));
         Vector3f new_pos = p.grid_position + timestep * temp_vel;
         // Left Right

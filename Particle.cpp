@@ -10,6 +10,7 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
     // load particle properties
     position = pos;
     velocity = vel;
+    velocity_gradient = Matrix3f::Zero();
     this->mass = mass;
     this->lambda = lambda;
     this->mu = mu;
@@ -58,10 +59,34 @@ void Particle::applyPlasticity() {
     def_elastic = u_copy * v.transpose();
 }
 
+//const Matrix3f Particle::energyDerivative() {
+//    float harden = exp(HARDENING*(1-def_plastic.determinant()));
+//    float Je = svd_e(0)*svd_e(1)*svd_e(2);
+//    Matrix3f corot = 2*mu*(def_elastic-svd_w*svd_v.transpose())*def_elastic.transpose();
+//    corot += Matrix3f::Identity() * (lambda*Je*(Je-1));
+//    return volume * harden * corot;
+//}
+
+// neo hookean
 const Matrix3f Particle::energyDerivative() {
-    float harden = exp(HARDENING*(1-def_plastic.determinant()));
-    float Je = svd_e(0)*svd_e(1)*svd_e(2);
-    Matrix3f corot = 2*mu*(def_elastic-svd_w*svd_v.transpose())*def_elastic.transpose();
-    corot += Matrix3f::Identity() * (lambda*Je*(Je-1));
-    return volume * harden * corot;
+    JacobiSVD<Matrix3f> svd(def_elastic, ComputeFullV | ComputeFullU);
+    Vector3f val_singular = svd.singularValues();
+    Matrix3f u = svd.matrixU();
+    Matrix3f v = svd.matrixV();
+    // regular to polar svd
+    if (u.determinant() == -1.0) {
+        u(0, 2) = -u(0, 2); u(1, 2) = -u(1, 2); u(2, 2) = -u(2, 2);
+        val_singular(2) = -val_singular(2);
+    }
+    if (v.determinant() == -1.0) {
+        v(2, 0) = -v(2, 0); v(2, 1) = -v(2, 1); v(2, 2) = -v(2, 2);
+        val_singular(2) = -val_singular(2);
+    }
+    // putting svd back together
+    Matrix3f F = u*val_singular.asDiagonal()*v.transpose();
+    float J = F.determinant();
+//    float energy_density = (mu/2)*((F*F.transpose()).trace()-3) - mu*log(J) + (lambda/2)*pow((log(J)),2);
+    Matrix3f P = mu*(F-F.transpose()) + lambda*log(J)*(F.inverse().transpose());
+    Matrix3f energy = volume*P*def_elastic.transpose();
+    return energy;
 }
