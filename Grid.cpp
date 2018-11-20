@@ -215,17 +215,17 @@ void Grid::p2g_vel(const Vector3f &gravity) {
                 }
             }
         }
-        float vel_x = p.velocity(0);
-        float vel_y = p.velocity(1);
-        float vel_z = p.velocity(2);
-        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+//        float vel_x = p.velocity(0);
+//        float vel_y = p.velocity(1);
+//        float vel_z = p.velocity(2);
+//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
     }
 
     for (int i = 0; i < nodes_length; i++) {
         GridNode &node = nodes[i];
         if (node.on) {
             // new velocity also stored in grid_forces
-            node.grid_forces = node.velocity + timestep * (gravity - node.grid_forces / node.mass);
+            node.grid_forces = node.velocity + timestep * (gravity + node.grid_forces / node.mass);
         }
     }
     collisionGrid();
@@ -281,10 +281,10 @@ void Grid::g2p_vel() {
         }
 //        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
 //        p.density /= node_volume;
-//        float vel_x = p.velocity(0);
-//        float vel_y = p.velocity(1);
-//        float vel_z = p.velocity(2);
-//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+        float vel_x = p.velocity(0);
+        float vel_y = p.velocity(1);
+        float vel_z = p.velocity(2);
+        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
     }
     collisionParticles();
 }
@@ -342,36 +342,36 @@ void Grid::collisionParticles() {
         Vector3f new_pos = p.grid_position + timestep * temp_vel;
         // Left Right
         if (new_pos(0) < BSPLINE_RADIUS - 1) {
-            p.position(0) = BSPLINE_RADIUS;
+//            p.position(0) = BSPLINE_RADIUS;
             p.velocity(0) = 0;
             p.velocity(1) *= STICKY;
             p.velocity(2) *= STICKY;
         } else if (new_pos(0) > size(0) - BSPLINE_RADIUS) {
-            p.position(0) = size(0) - BSPLINE_RADIUS;
+//            p.position(0) = size(0) - BSPLINE_RADIUS;
             p.velocity(0) = 0;
             p.velocity(1) *= STICKY;
             p.velocity(2) *= STICKY;
         }
         // Top Bottom
         if (new_pos(1) < BSPLINE_RADIUS - 1) {
-            p.position(1) = BSPLINE_RADIUS;
+//            p.position(1) = BSPLINE_RADIUS;
             p.velocity(1) = 0;
             p.velocity(0) *= STICKY;
             p.velocity(2) *= STICKY;
         } else if (new_pos(1) > size(1) - BSPLINE_RADIUS) {
-            p.position(1) = size(1) - BSPLINE_RADIUS;
+//            p.position(1) = size(1) - BSPLINE_RADIUS;
             p.velocity(1) = 0;
             p.velocity(0) *= STICKY;
             p.velocity(2) *= STICKY;
         }
         // Front Back
         if (new_pos(2) < BSPLINE_RADIUS - 1) {
-            p.position(2) = BSPLINE_RADIUS;
+//            p.position(2) = BSPLINE_RADIUS;
             p.velocity(2) = 0;
             p.velocity(1) *= STICKY;
             p.velocity(0) *= STICKY;
         } else if (new_pos(2) > size(2) - BSPLINE_RADIUS) {
-            p.position(2) = size(1) - BSPLINE_RADIUS;
+//            p.position(2) = size(1) - BSPLINE_RADIUS;
             p.velocity(2) = 0;
             p.velocity(1) *= STICKY;
             p.velocity(0) *= STICKY;

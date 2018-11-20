@@ -21,6 +21,12 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
 }
 Particle::~Particle(){}
 void Particle::updatePos() {
+//    if (velocity(0)>1000.0) velocity(0) = 1000.0;
+//    if (velocity(0)<-1000.0) velocity(0) = -1000.0;
+//    if (velocity(1)>1000.0) velocity(1) = 1000.0;
+//    if (velocity(1)<-1000.0) velocity(1) = -1000.0;
+//    if (velocity(2)>1000.0) velocity(2) = 1000.0;
+//    if (velocity(2)<-1000.0) velocity(2) = -1000.0;
     Vector3f change = timestep*velocity;
     if (isnan(change(0)) || isnan(change(1)) || isnan(change(2))) {
         return;

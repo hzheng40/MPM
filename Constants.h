@@ -10,9 +10,9 @@ using namespace Eigen;
 const float BSPLINE_EPSILON = 1e-4;
 const int BSPLINE_RADIUS = 2;
 static const int
-        MAX_TIMESTEP = 1;
+        MAX_TIMESTEP = 100;
 static const float
-        PT_MASS = 0.1,
+        PT_MASS = 1.0,
         CFL = .04,					//Adaptive timestep adjustment
 //        MAX_TIMESTEP = 5e-4,		//Upper timestep limit?
         CRIT_COMPRESS = 1-1.9e-2,
@@ -22,7 +22,7 @@ static const float
         YOUNGS_MODULUS = 1.5e5,
         POISSONS_RATIO = .2,
         STICKY = .9,				//Collision stickiness (lower = stickier)
-        GRAVITY = -9.8,
+        GRAVITY = 980000,
         TIMESTEP = 0.0001;
 
 //Actual timestep is adaptive, based on grid resolution and max velocity

@@ -24,7 +24,7 @@ void writePartio(const string& particle_file_prefix, int seq_num, vector<Particl
 
 int main() {
 
-    Poisson poisson_sampler = Poisson(50, 50, 50, 2.0, 30);
+    Poisson poisson_sampler = Poisson(50.0, 50.0, 50.0, 5.0, 30);
     poisson_sampler.initGrid();
     poisson_sampler.sample();
     cout << "done sampling" << "\n";
@@ -34,7 +34,7 @@ int main() {
     vector<Particle> part_list = poisson_sampler.toObject(sphere);
     cout << "particle in list now" << "\n";
     // make grid
-    Grid grid(Vector3f(-50.0,-50.0,-50.0), Vector3f(150.0,150.0,150.0), Vector3f(200.0,200.0,200.0), part_list);
+    Grid grid(Vector3f(0.0,0.0,0.0), Vector3f(100.0,100.0,100.0), Vector3f(200.0,200.0,200.0), part_list);
     grid.initializeMass();
     // implicit only
     grid.calculateVolumes();
