@@ -79,7 +79,7 @@ const Matrix3f Particle::energyDerivative() {
         val_singular(2) = -val_singular(2);
     }
     if (v.determinant() == -1.0) {
-        v(2, 0) = -v(2, 0); v(2, 1) = -v(2, 1); v(2, 2) = -v(2, 2);
+        v(0, 2) = -v(0, 2); v(1, 2) = -v(1, 2); v(2, 2) = -v(2, 2);
         val_singular(2) = -val_singular(2);
     }
     // putting svd back together
@@ -88,5 +88,6 @@ const Matrix3f Particle::energyDerivative() {
 //    float energy_density = (mu/2)*((F*F.transpose()).trace()-3) - mu*log(J) + (lambda/2)*pow((log(J)),2);
     Matrix3f P = mu*(F-F.transpose()) + lambda*log(J)*(F.inverse().transpose());
     Matrix3f energy = volume*P*def_elastic.transpose();
+//    cout << "energy: \n" << energy << endl;
     return energy;
 }

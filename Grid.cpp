@@ -100,6 +100,7 @@ void Grid::initializeVel() {
                         }
                         int ind = (int) (y * size(0) + x + z * size(0) * size(1));
                         float node_mass = nodes[ind].mass;
+                        if (node_mass == 0.0) continue;
                         // conservation of momentum
                         nodes[ind].velocity(0) += p.velocity(0) * w * p.mass / node_mass;
                         nodes[ind].velocity(1) += p.velocity(1) * w * p.mass / node_mass;
@@ -214,10 +215,10 @@ void Grid::p2g_vel(const Vector3f &gravity) {
                 }
             }
         }
-//        float vel_x = p.velocity(0);
-//        float vel_y = p.velocity(1);
-//        float vel_z = p.velocity(2);
-//        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
+        float vel_x = p.velocity(0);
+        float vel_y = p.velocity(1);
+        float vel_z = p.velocity(2);
+        cout << "part vel: (" << vel_x << ", " << vel_y << ", " << vel_z << ") \n";
     }
 
     for (int i = 0; i < nodes_length; i++) {
