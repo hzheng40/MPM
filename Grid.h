@@ -29,7 +29,6 @@ public:
     Grid(Vector3f pos, Vector3f dims, Vector3f cell_num, vector<Particle> object);
     virtual ~Grid();
     // particles to grid
-    void initialize();
     void initializeMass();
     void initializeVel();
     void calculateVolumes();

@@ -24,24 +24,25 @@ void writePartio(const string& particle_file_prefix, int seq_num, vector<Particl
 
 int main() {
 
-    Poisson poisson_sampler = Poisson(50.0, 50.0, 50.0, 5.0, 30);
+    Poisson poisson_sampler = Poisson(1, 1, 1, 0.05, 30);
     poisson_sampler.initGrid();
     poisson_sampler.sample();
     cout << "done sampling" << "\n";
 //    poisson_sampler.writePartio("poisson.bgeo");
-    auto sphere = poisson_sampler.toSphere();
+//    auto sphere = poisson_sampler.toSphere();
+    auto cube = poisson_sampler.toCube();
 //    poisson_sampler.writePartioByObejct("poisson_sphere.bgeo", sphere);
-    vector<Particle> part_list = poisson_sampler.toObject(sphere);
+    poisson_sampler.writePartioByObejct("poisson_cube.bgeo", cube);
+//    vector<Particle> part_list = poisson_sampler.toObject(sphere);
+    vector<Particle> part_list = poisson_sampler.toObject(cube);
     cout << "particle in list now" << "\n";
     // make grid
-    Grid grid(Vector3f(0.0,0.0,0.0), Vector3f(100.0,100.0,100.0), Vector3f(200.0,200.0,200.0), part_list);
+    Grid grid(Vector3f(-0.5, -0.5, -0.5), Vector3f(2.0, 2.0, 2.0), Vector3f(100.0,100.0,100.0), part_list);
     grid.initializeMass();
-    // implicit only
     grid.calculateVolumes();
     Vector3f gravity = Vector3f(0, 0, GRAVITY);
     // main MPM loop
-    for (float time_step=0; time_step<MAX_TIMESTEP; time_step+=TIMESTEP) {
-        int frame_num = static_cast<int> (time_step / TIMESTEP);
+    for (int frame_num=0; frame_num<MAX_ITER; frame_num++) {
         cout << "current frame number: " << frame_num << "\n";
         grid.initializeMass();
         grid.initializeVel();
@@ -49,14 +50,15 @@ int main() {
         for (int i=0; i<grid.object.size(); i++) {
             Particle &part = grid.object[i];
             part.updateGradient();
-//            part.applyPlasticity();
+//            part.checksum();
+            part.applyPlasticity();
         }
         grid.g2p_vel();
         for (int i=0; i<grid.object.size(); i++) {
             Particle &part = grid.object[i];
             part.updatePos();
         }
-        writePartio("mpm_partio/mpm_", frame_num, grid.object);
+        writePartio("mpm_partio_3/mpm_", frame_num, grid.object);
     }
 	return 0;
 }

@@ -24,7 +24,8 @@ public:
     vector<Vector3f, aligned_allocator<Vector3f>> grid;
     // indexing: i*w + j + k*w*h
     // i: y, j: x, k: z
-    int grid_width, grid_height, grid_depth;
+    float grid_width, grid_height, grid_depth;
+    int grid_length, w_ind, h_ind, d_ind;
     float cell_size;
     float radius;
     int k;
@@ -35,6 +36,7 @@ public:
     void initGrid();
     void sample();
     vector<Vector3f, aligned_allocator<Vector3f>> toSphere();
+    vector<Vector3f, aligned_allocator<Vector3f>> toCube();
     vector<Particle> toObject(vector<Vector3f, aligned_allocator<Vector3f>>);
     void writePartio(const string& particle_file);
     void writePartioByObejct(const string& particle_file, vector<Vector3f, aligned_allocator<Vector3f>> object_file);

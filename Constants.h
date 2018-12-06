@@ -7,26 +7,29 @@
 #include <Eigen/Dense>
 using namespace Eigen;
 
-const float BSPLINE_EPSILON = 1e-4;
-const int BSPLINE_RADIUS = 2;
-static const int
-        MAX_TIMESTEP = 100;
-static const float
-        PT_MASS = 1.0,
-        CFL = .04,					//Adaptive timestep adjustment
-//        MAX_TIMESTEP = 5e-4,		//Upper timestep limit?
-        CRIT_COMPRESS = 1-1.9e-2,
-        CRIT_STRETCH = 1+7.5e-3,
-        HARDENING = 5.0,
-        DENSITY = 100,
-        YOUNGS_MODULUS = 1.5e5,
-        POISSONS_RATIO = .2,
-        STICKY = .9,				//Collision stickiness (lower = stickier)
-        GRAVITY = 980000,
-        TIMESTEP = 0.0001;
+const float BSPLINE_EPSILON = 1e-7;
+const float MIN_FLOAT = 1e-7;
+const float MAX_FLOAT = 1e7;
+const int BSPLINE_RADIUS = 3;
 
-//Actual timestep is adaptive, based on grid resolution and max velocity
-//extern float TIMESTEP;
+static const float
+        DENSITY = 1,
+        PARTICLE_DIAM = 500,
+//        PT_MASS = 0.000001,
+        PT_MASS = 1,
+        CRIT_COMPRESS = 2.5e-2,
+        CRIT_STRETCH = 7.5e-3,
+        HARDENING = 10.0,
+//        YOUNGS_MODULUS = 1.4e5,
+//        POISSONS_RATIO = 0.2,
+        YOUNGS_MODULUS = 1.4e5,
+        POISSONS_RATIO = 0.2,
+        STICKY = .4,
+        BOUNCY = .001,
+        GRAVITY = 9.8,
+//        GRAVITY = 980000,
+        TIMESTEP = 0.1,
+        MAX_ITER = 300;
 
 static const float
         LAMBDA = YOUNGS_MODULUS*POISSONS_RATIO/((1+POISSONS_RATIO)*(1-2*POISSONS_RATIO)),

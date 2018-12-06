@@ -15,7 +15,7 @@ public:
     Vector3f position, velocity;
     Matrix3f velocity_gradient;
     float lambda, mu, timestep;
-    Matrix3f def_elastic, def_plastic;
+    Matrix3f def_elastic, def_plastic, full_def;
     Matrix3f svd_u, svd_v;
     Vector3f svd_s;
     Vector3f grid_position;
@@ -25,6 +25,9 @@ public:
     Particle();
     Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float mu, float timestep);
     virtual ~Particle();
+    // check weight sum
+    void checksum();
+    void checkgradsum();
     // update position based on velocity
     void updatePos();
     // update deformation gradient
