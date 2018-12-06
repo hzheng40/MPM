@@ -16,8 +16,8 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
 //    this->volume = this->mass/DENSITY;
     this->mu = mu;
     this->timestep = timestep;
-    def_elastic = Matrix3f::Identity();
-    def_plastic = Matrix3f::Identity();
+    def_elastic = 11000 * Matrix3f::Identity();
+    def_plastic = 11000 * Matrix3f::Identity();
 
 }
 Particle::~Particle(){}
@@ -123,7 +123,7 @@ const Matrix3f Particle::energyDerivative() {
     Matrix3f R = u*v.transpose();
     Matrix3f P = 2*mu*(F-R) + lambda*(J-1)*J*(F.inverse().transpose());
 //    Matrix3f P = mu*(def_elastic-def_elastic.transpose()) + lambda*log(J)*(def_elastic.inverse().transpose());
-    Matrix3f energy = this->volume*P*F.transpose();
+    Matrix3f energy = HARDENING*this->volume*P*F.transpose();
 //    Matrix3f energy = 10000000*P*def_elastic.transpose();
 //    cout << "energy: \n" << energy << endl;
 //    cout << "def_elastic: \n" << def_elastic << endl;

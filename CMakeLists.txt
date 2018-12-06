@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
 project(PARTIO_EXAMPLE)
 set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_FLAGS -O3)
 find_package(Eigen3 REQUIRED)
 set(EXTERNAL ${CMAKE_BINARY_DIR}/external)
 

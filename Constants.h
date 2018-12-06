@@ -25,10 +25,11 @@ static const float
         YOUNGS_MODULUS = 1.4e5,
         POISSONS_RATIO = 0.2,
         STICKY = .4,
-        BOUNCY = .001,
-        GRAVITY = 9.8,
+        BOUNCY = .9,
+//        GRAVITY = 9.8,
+        GRAVITY = 0,
 //        GRAVITY = 980000,
-        TIMESTEP = 0.1,
+        TIMESTEP = 1e-4,
         MAX_ITER = 300;
 
 static const float

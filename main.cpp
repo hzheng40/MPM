@@ -24,7 +24,7 @@ void writePartio(const string& particle_file_prefix, int seq_num, vector<Particl
 
 int main() {
 
-    Poisson poisson_sampler = Poisson(1, 1, 1, 0.05, 30);
+    Poisson poisson_sampler = Poisson(1, 1, 1, 0.03, 30);
     poisson_sampler.initGrid();
     poisson_sampler.sample();
     cout << "done sampling" << "\n";

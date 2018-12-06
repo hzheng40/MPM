@@ -297,37 +297,37 @@ void Grid::collisionParticles() {
         if (new_pos(0) < BSPLINE_RADIUS) {
             p.position(0) = origin(0)+BSPLINE_RADIUS*cellsize(0);
             p.velocity(0) = -BOUNCY*p.velocity(0);
-            p.velocity(1) *= STICKY;
-            p.velocity(2) *= STICKY;
+//            p.velocity(1) *= STICKY;
+//            p.velocity(2) *= STICKY;
         } else if (new_pos(0) > size(0) - BSPLINE_RADIUS) {
             p.position(0) = origin(0) + (size(0)-BSPLINE_RADIUS)*cellsize(0);
             p.velocity(0) = -BOUNCY*p.velocity(0);
-            p.velocity(1) *= STICKY;
-            p.velocity(2) *= STICKY;
+//            p.velocity(1) *= STICKY;
+//            p.velocity(2) *= STICKY;
         }
         // Top Bottom
         if (new_pos(1) < BSPLINE_RADIUS) {
             p.position(1) = origin(1)+BSPLINE_RADIUS*cellsize(1);
             p.velocity(1) = -BOUNCY*p.velocity(1);
-            p.velocity(0) *= STICKY;
-            p.velocity(2) *= STICKY;
+//            p.velocity(0) *= STICKY;
+//            p.velocity(2) *= STICKY;
         } else if (new_pos(1) > size(1) - BSPLINE_RADIUS) {
             p.position(1) = origin(1) + (size(1)-BSPLINE_RADIUS)*cellsize(1);
             p.velocity(1) = -BOUNCY*p.velocity(1);
-            p.velocity(0) *= STICKY;
-            p.velocity(2) *= STICKY;
+//            p.velocity(0) *= STICKY;
+//            p.velocity(2) *= STICKY;
         }
         // Front Back
         if (new_pos(2) < BSPLINE_RADIUS) {
             p.position(2) = origin(2)+BSPLINE_RADIUS*cellsize(2);
             p.velocity(2) = -BOUNCY*p.velocity(2);
-            p.velocity(1) *= STICKY;
-            p.velocity(0) *= STICKY;
+//            p.velocity(1) *= STICKY;
+//            p.velocity(0) *= STICKY;
         } else if (new_pos(2) > size(2) - BSPLINE_RADIUS) {
             p.position(2) = origin(2) + (size(2)-BSPLINE_RADIUS)*cellsize(2);
             p.velocity(2) = -BOUNCY*p.velocity(2);
-            p.velocity(1) *= STICKY;
-            p.velocity(0) *= STICKY;
+//            p.velocity(1) *= STICKY;
+//            p.velocity(0) *= STICKY;
         }
     }
 }
