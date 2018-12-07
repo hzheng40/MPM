@@ -105,7 +105,7 @@ void Grid::initializeVel() {
                         }
                         float node_mass = nodes[ind].mass;
                         if (node_mass <= MIN_FLOAT) {
-//                            nodes[ind].velocity = Vector3f(0.0, 0.0, 0.0);
+                            nodes[ind].velocity = Vector3f(0.0, 0.0, 0.0);
                             continue;
                         }
                         // conservation of momentum
@@ -119,7 +119,7 @@ void Grid::initializeVel() {
             }
         }
     }
-    collisionGrid();
+//    collisionGrid();
 }
 
 // volume from grid to particles, ran once at the start, for implicit
@@ -146,7 +146,8 @@ void Grid::calculateVolumes() {
             }
         }
         p.density /= node_volume;
-        p.volume = p.mass/p.density;
+//        p.volume = p.mass/p.density;
+        p.volume = 1;
 //        p.volume = 1e10;
     }
 }
@@ -189,7 +190,7 @@ void Grid::p2g_vel(const Vector3f &gravity) {
             node.grid_forces = Vector3f(0.0, 0.0, 0.0);
         }
     }
-    collisionGrid();
+//    collisionGrid();
 }
 
 // g2p
@@ -231,13 +232,13 @@ void Grid::g2p_vel() {
 //                        flip += (node.grid_forces - node.velocity)*w;
                         // grad is outer product
                         p.velocity_gradient += node.grid_forces * p.weight_gradient[idx].transpose();
-//                        p.density += w*node.mass/node_volume;
+                        p.density += w*node.mass/node_volume;
                     }
                 }
             }
         }
 //        p.velocity = flip*FLIP_PERCENT + pic*(1-FLIP_PERCENT);
-//        p.density /= node_volume;
+        p.density /= node_volume;
 //        float vel_x = p.velocity(0);
 //        float vel_y = p.velocity(1);
 //        float vel_z = p.velocity(2);
@@ -245,7 +246,7 @@ void Grid::g2p_vel() {
 //        cout << "vel grad: \n" << p.velocity_gradient << endl;
 
     }
-    collisionParticles();
+//    collisionParticles();
 }
 
 

@@ -16,8 +16,8 @@ Particle::Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float m
 //    this->volume = this->mass/DENSITY;
     this->mu = mu;
     this->timestep = timestep;
-    def_elastic = 11000 * Matrix3f::Identity();
-    def_plastic = 11000 * Matrix3f::Identity();
+    def_elastic = 1.2 * Matrix3f::Identity();
+    def_plastic = 1.2 * Matrix3f::Identity();
 
 }
 Particle::~Particle(){}
@@ -65,6 +65,39 @@ void Particle::applyPlasticity() {
 }
 
 //const Matrix3f Particle::energyDerivative() {
+//    JacobiSVD<Matrix3f> svd(def_elastic, ComputeFullV | ComputeFullU);
+//    Vector3f val_singular = svd.singularValues();
+//    Matrix3f u = svd.matrixU();
+//    Matrix3f v = svd.matrixV();
+//    //    cout << val_singular << endl;
+//    //    cout << u << endl;
+//    //    cout << v << endl;
+//    // regular to polar svd
+//    //    if (u.determinant() == -1.0) {
+//    if (u.determinant() < 0.0) {
+//    u(0, 2) = -u(0, 2); u(1, 2) = -u(1, 2); u(2, 2) = -u(2, 2);
+//    val_singular(2) = -val_singular(2);
+//    }
+//    //    if (v.determinant() == -1.0) {
+//    if (v.determinant() < 0.0) {
+//    v(0, 2) = -v(0, 2); v(1, 2) = -v(1, 2); v(2, 2) = -v(2, 2);
+//    val_singular(2) = -val_singular(2);
+//    }
+//
+//    if (val_singular(0) < val_singular(1)) {
+//    float temp = val_singular(0);
+//    val_singular(0) = val_singular(1);
+//    val_singular(1) = temp;
+//    }
+//    for (int i = 0; i<3; i++) {
+//    //        float sig = val_singular(i);
+//    val_singular(i) = max(1-CRIT_COMPRESS, min(val_singular(1), 1+CRIT_STRETCH));
+//    //        if (sig < CRIT_COMPRESS) val_singular(i) = CRIT_COMPRESS;
+//    //        else if (sig > CRIT_STRETCH) val_singular(i) = CRIT_STRETCH;
+//    }
+//    svd_u = Matrix3f(u);
+//    svd_v = Matrix3f(v);
+//    svd_s = Vector3f(val_singular);
 //    float harden = exp(HARDENING*(1-def_plastic.determinant()));
 //    float Je = svd_s(0)*svd_s(1)*svd_s(2);
 //    Matrix3f corot = 2*mu*(def_elastic-svd_u*svd_v.transpose())*def_elastic.transpose();
@@ -109,21 +142,24 @@ const Matrix3f Particle::energyDerivative() {
     svd_s = Vector3f(val_singular);
     // putting svd back together
 
-//    def_elastic = u*val_singular.asDiagonal()*v.transpose();
+    def_elastic = u*val_singular.asDiagonal()*v.transpose();
 
 //    float J = def_elastic.determinant();
 //    float energy_density = (mu/2)*((F*F.transpose()).trace()-3) - mu*log(J) + (lambda/2)*pow((log(J)),2);
     // neo-Hookean
+    Matrix3f R = u * v.transpose();
 //    Matrix3f F = u*val_singular.asDiagonal()*v.transpose();
 //    float J = F.determinant();
+    float J = def_elastic.determinant();
 //    Matrix3f P = mu*(F-F.inverse().transpose()) + lambda*log(J)*(F.inverse().transpose());
+    Matrix3f P = mu*(def_elastic - def_elastic.transpose().inverse()) + lambda*log(J)*def_elastic.transpose().inverse();
     // corot
-    Matrix3f F = u*v.transpose()*v*val_singular.asDiagonal()*v.transpose();
-    float J = F.determinant();
-    Matrix3f R = u*v.transpose();
-    Matrix3f P = 2*mu*(F-R) + lambda*(J-1)*J*(F.inverse().transpose());
+//    Matrix3f F = u*v.transpose()*v*val_singular.asDiagonal()*v.transpose();
+//    float J = F.determinant();
+//    Matrix3f R = u*v.transpose();
+//    Matrix3f P = 2*mu*(F-R) + lambda*(J-1)*J*(F.inverse().transpose());
 //    Matrix3f P = mu*(def_elastic-def_elastic.transpose()) + lambda*log(J)*(def_elastic.inverse().transpose());
-    Matrix3f energy = HARDENING*this->volume*P*F.transpose();
+    Matrix3f energy = this->volume*P*def_elastic.transpose();
 //    Matrix3f energy = 10000000*P*def_elastic.transpose();
 //    cout << "energy: \n" << energy << endl;
 //    cout << "def_elastic: \n" << def_elastic << endl;
