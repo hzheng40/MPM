@@ -11,19 +11,19 @@ using namespace Eigen;
 using namespace std;
 class Particle {
 public:
-    float volume, mass, density;
-    Vector3f position, velocity;
-    Matrix3f velocity_gradient;
-    float lambda, mu, timestep;
-    Matrix3f def_elastic, def_plastic, full_def;
-    Matrix3f svd_u, svd_v;
-    Vector3f svd_s;
-    Vector3f grid_position;
+    double volume, mass, density;
+    Vector3d position, velocity;
+    Matrix3d velocity_gradient;
+    double lambda, mu, timestep;
+    Matrix3d def_elastic, def_plastic, full_def;
+    Matrix3d svd_u, svd_v;
+    Vector3d svd_s;
+    Vector3d grid_position;
     // 64 in 3d (4x4x4)
-    Vector3f weight_gradient[64];
-    float weights[64];
+    Vector3d weight_gradient[64];
+    double weights[64];
     Particle();
-    Particle(Vector3f pos, Vector3f vel, float mass, float lambda, float mu, float timestep);
+    Particle(Vector3d pos, Vector3d vel, double mass, double lambda, double mu, double timestep);
     virtual ~Particle();
     // check weight sum
     void checksum();
@@ -33,7 +33,7 @@ public:
     // update deformation gradient
     void updateGradient();
     void applyPlasticity();
-    const Matrix3f energyDerivative();
+    Matrix3d stress();
 
 };
 

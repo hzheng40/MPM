@@ -21,25 +21,25 @@ using namespace std;
 
 class Poisson {
 public:
-    vector<Vector3f, aligned_allocator<Vector3f>> grid;
+    vector<Vector3d, aligned_allocator<Vector3d>> grid;
     // indexing: i*w + j + k*w*h
     // i: y, j: x, k: z
-    float grid_width, grid_height, grid_depth;
+    double grid_width, grid_height, grid_depth;
     int grid_length, w_ind, h_ind, d_ind;
-    float cell_size;
-    float radius;
+    double cell_size;
+    double radius;
     int k;
     vector<int> active;
 
-    Poisson(int grid_width, int grid_height, int grid_depth, float radius, int k);
+    Poisson(double grid_width, double grid_height, double grid_depth, double radius, int k);
     virtual ~Poisson();
     void initGrid();
     void sample();
-    vector<Vector3f, aligned_allocator<Vector3f>> toSphere();
-    vector<Vector3f, aligned_allocator<Vector3f>> toCube();
-    vector<Particle> toObject(vector<Vector3f, aligned_allocator<Vector3f>>);
+    vector<Vector3d, aligned_allocator<Vector3d>> toSphere();
+    vector<Vector3d, aligned_allocator<Vector3d>> toCube();
+    vector<Particle> toObject(vector<Vector3d, aligned_allocator<Vector3d>>);
     void writePartio(const string& particle_file);
-    void writePartioByObejct(const string& particle_file, vector<Vector3f, aligned_allocator<Vector3f>> object_file);
+    void writePartioByObejct(const string& particle_file, vector<Vector3d, aligned_allocator<Vector3d>> object_file);
     void writePartioByFrame(const string& particle_file_prefix, int seq_num);
 };
 #endif //PARTIO_EXAMPLE_POISSON_H

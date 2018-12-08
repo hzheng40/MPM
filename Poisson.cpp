@@ -2,7 +2,7 @@
 // Created by billyzheng on 11/11/18.
 //
 #include "Poisson.h"
-Poisson::Poisson(int grid_width, int grid_height, int grid_depth, float radius, int k) {
+Poisson::Poisson(double grid_width, double grid_height, double grid_depth, double radius, int k) {
     cell_size = radius/sqrt(3.0);
     this->grid_width = grid_width;
     this->grid_height = grid_height;
@@ -13,7 +13,7 @@ Poisson::Poisson(int grid_width, int grid_height, int grid_depth, float radius, 
     w_ind = grid_width/cell_size;
     h_ind = grid_height/cell_size;
     d_ind = grid_depth/cell_size;
-    for (int i=0; i<grid_length; i++) grid.push_back(Vector3f(-1.0, -1.0, -1.0));
+    for (int i=0; i<grid_length; i++) grid.push_back(Vector3d(-1.0, -1.0, -1.0));
     vector<int> active;
 }
 
@@ -24,14 +24,14 @@ void Poisson::initGrid() {
     // random device
     random_device rd;
     mt19937 mt(rd());
-    uniform_real_distribution<float> x_dist(0.0, grid_width);
-    uniform_real_distribution<float> y_dist(0.0, grid_height);
-    uniform_real_distribution<float> z_dist(0.0, grid_depth);
+    uniform_real_distribution<double> x_dist(0.0, grid_width);
+    uniform_real_distribution<double> y_dist(0.0, grid_height);
+    uniform_real_distribution<double> z_dist(0.0, grid_depth);
     // random sample, x in [0, width), y in [0, height)
-    float x = x_dist(mt);
-    float y = y_dist(mt);
-    float z = z_dist(mt);
-    Vector3f init_pos = Vector3f(x, y, z);
+    double x = x_dist(mt);
+    double y = y_dist(mt);
+    double z = z_dist(mt);
+    Vector3d init_pos = Vector3d(x, y, z);
     cout << "initial sample x: " << x << "\n";
     cout << "initial sample y: " << y << "\n";
     cout << "initial sample z: " << z << "\n";
@@ -54,9 +54,9 @@ void Poisson::sample() {
     random_device rd;
     mt19937 mt(rd());
 
-    uniform_real_distribution<float> theta_dist(0.0, 2*M_PI);
-    uniform_real_distribution<float> phi_dist(0.0, M_PI);
-    uniform_real_distribution<float> radius_dist(radius, 2*radius);
+    uniform_real_distribution<double> theta_dist(0.0, 2*M_PI);
+    uniform_real_distribution<double> phi_dist(0.0, M_PI);
+    uniform_real_distribution<double> radius_dist(radius, 2*radius);
 
     // frame num for partio
     int frame_num = 0;
@@ -73,16 +73,16 @@ void Poisson::sample() {
         // k samples around current active point
         for (int i=0; i<k; i++) {
             // random point in donut around current active point
-            float rand_theta = theta_dist(mt);
-            float rand_phi = phi_dist(mt);
-            float rand_r = radius_dist(mt);
-            float rand_offset_x = rand_r*cos(rand_theta)*sin(rand_phi);
-            float rand_offset_y = rand_r*sin(rand_theta)*sin(rand_phi);
-            float rand_offset_z = rand_r*cos(rand_phi);
-            Vector3f active_pt = grid[active_ind];
-            float rand_pt_x = active_pt(0) + rand_offset_x;
-            float rand_pt_y = active_pt(1) + rand_offset_y;
-            float rand_pt_z = active_pt(2) + rand_offset_z;
+            double rand_theta = theta_dist(mt);
+            double rand_phi = phi_dist(mt);
+            double rand_r = radius_dist(mt);
+            double rand_offset_x = rand_r*cos(rand_theta)*sin(rand_phi);
+            double rand_offset_y = rand_r*sin(rand_theta)*sin(rand_phi);
+            double rand_offset_z = rand_r*cos(rand_phi);
+            Vector3d active_pt = grid[active_ind];
+            double rand_pt_x = active_pt(0) + rand_offset_x;
+            double rand_pt_y = active_pt(1) + rand_offset_y;
+            double rand_pt_z = active_pt(2) + rand_offset_z;
 //            Vector2f rand_pt = active_pt + Vector2f(rand_offset_x, rand_offset_y);
             // random point's grid position
             int rand_pt_i = static_cast<int> (rand_pt_y/cell_size);
@@ -96,17 +96,17 @@ void Poisson::sample() {
                 continue;
             }
             // checking only neighbors
-            Vector3f curr_pt_in_grid = grid[rand_pt_i*w_ind + rand_pt_j + rand_pt_k*w_ind*h_ind];
+            Vector3d curr_pt_in_grid = grid[rand_pt_i*w_ind + rand_pt_j + rand_pt_k*w_ind*h_ind];
             if (curr_pt_in_grid(0) != -1.0 && curr_pt_in_grid(1) != -1.0 && curr_pt_in_grid(2) != -1.0) {
                 continue;
             }
             for (int i_pt = -1; i_pt <= 1; i_pt++) {
                 for (int j_pt = -1; j_pt <= 1; j_pt++) {
                     for (int k_pt = -1; k_pt <= 1; k_pt++) {
-                        Vector3f neighbor = grid[(rand_pt_i+i_pt)*w_ind+(rand_pt_j+j_pt)+(rand_pt_k+k_pt)*w_ind*h_ind];
+                        Vector3d neighbor = grid[(rand_pt_i+i_pt)*w_ind+(rand_pt_j+j_pt)+(rand_pt_k+k_pt)*w_ind*h_ind];
     //                    cout << "neighbor pos: (" << neighbor(0) << ", " << neighbor(1) << ")\n";
                         if (neighbor(0) != -1.0 && neighbor(1) != -1.0 && neighbor(2) != -1.0) {
-                            float distance = sqrt(pow((neighbor(0) - rand_pt_x), 2)
+                            double distance = sqrt(pow((neighbor(0) - rand_pt_x), 2)
                                     + pow((neighbor(1) - rand_pt_y), 2)
                                     + pow((neighbor(2) - rand_pt_z), 2));
                             if (distance < radius) valid = false;
@@ -116,7 +116,7 @@ void Poisson::sample() {
             }
             // if no violation add to grid and active list
             if (valid) {
-                Vector3f point_to_add = Vector3f(rand_pt_x, rand_pt_y, rand_pt_z);
+                Vector3d point_to_add = Vector3d(rand_pt_x, rand_pt_y, rand_pt_z);
                 point_added = true;
                 grid[rand_pt_i * w_ind + rand_pt_j + rand_pt_k * w_ind * h_ind] = point_to_add;
                 int new_active_ind = rand_pt_i * w_ind + rand_pt_j + rand_pt_k * w_ind * h_ind;
@@ -140,10 +140,10 @@ void Poisson::writePartio(const string& particle_file) {
     Partio::ParticleAttribute posH;
     posH = parts->addAttribute("position", Partio::VECTOR, 3);
     for (int i=0; i<grid_width*grid_height*grid_depth; i++) {
-        Vector3f pt = grid[i];
+        Vector3d pt = grid[i];
         if (pt(0) >= 0 && pt(1) >= 0 && pt(2) >= 0) {
             int idx = parts->addParticle();
-            float *p = parts->dataWrite<float>(posH, idx);
+            double *p = parts->dataWrite<double>(posH, idx);
             p[0] = pt(0);
             p[1] = pt(1);
             p[2] = pt(2);
@@ -154,12 +154,12 @@ void Poisson::writePartio(const string& particle_file) {
 }
 
 void Poisson::writePartioByObejct(const string &particle_file,
-                                  vector<Vector3f, aligned_allocator<Vector3f>> object_file){
+                                  vector<Vector3d, aligned_allocator<Vector3d>> object_file){
     Partio::ParticlesDataMutable *parts = Partio::create();
     Partio::ParticleAttribute posH;
     posH = parts->addAttribute("position", Partio::VECTOR, 3);
     for (int i=0; i<object_file.size(); i++) {
-        Vector3f pt = object_file[i];
+        Vector3d pt = object_file[i];
         if (pt(0) >= 0 && pt(1) >= 0 && pt(2) >= 0) {
             int idx = parts->addParticle();
             float *p = parts->dataWrite<float>(posH, idx);
@@ -177,7 +177,7 @@ void Poisson::writePartioByFrame(const string& particle_file_prefix, int seq_num
     Partio::ParticleAttribute posH;
     posH = parts->addAttribute("position", Partio::VECTOR, 3);
     for (int i=0; i<grid_width*grid_height*grid_depth; i++) {
-        Vector3f pt = grid[i];
+        Vector3d pt = grid[i];
         if (pt(0) >= 0 && pt(1) >= 0 && pt(2) >= 0) {
             int idx = parts->addParticle();
             float *p = parts->dataWrite<float>(posH, idx);
@@ -190,13 +190,13 @@ void Poisson::writePartioByFrame(const string& particle_file_prefix, int seq_num
     parts->release();
 }
 
-vector<Vector3f, aligned_allocator<Vector3f>> Poisson::toSphere() {
-    vector<Vector3f, aligned_allocator<Vector3f>> sphere_grid;
-    float sphere_r = min(min(grid_width, grid_height), grid_depth) / 2.0;
-    Vector3f sphere_c = Vector3f(grid_width/2.0, grid_height/2.0, grid_depth/2.0);
+vector<Vector3d, aligned_allocator<Vector3d>> Poisson::toSphere() {
+    vector<Vector3d, aligned_allocator<Vector3d>> sphere_grid;
+    double sphere_r = min(min(grid_width, grid_height), grid_depth) / 2.0;
+    Vector3d sphere_c = Vector3d(grid_width/2.0, grid_height/2.0, grid_depth/2.0);
     for (int i=0; i<w_ind*h_ind*d_ind; i++) {
-        Vector3f curr_pt = grid[i];
-        float dist = pow((curr_pt(0)-sphere_c(0)), 2) + pow((curr_pt(1)-sphere_c(1)), 2) + pow((curr_pt(2)-sphere_c(2)), 2);
+        Vector3d curr_pt = grid[i];
+        double dist = pow((curr_pt(0)-sphere_c(0)), 2) + pow((curr_pt(1)-sphere_c(1)), 2) + pow((curr_pt(2)-sphere_c(2)), 2);
         if (dist <= pow(sphere_r, 2)) {
             sphere_grid.push_back(curr_pt);
         }
@@ -204,28 +204,29 @@ vector<Vector3f, aligned_allocator<Vector3f>> Poisson::toSphere() {
     return sphere_grid;
 }
 
-vector<Vector3f, aligned_allocator<Vector3f>> Poisson::toCube() {
-    vector<Vector3f, aligned_allocator<Vector3f>> sphere_grid;
+vector<Vector3d, aligned_allocator<Vector3d>> Poisson::toCube() {
+    vector<Vector3d, aligned_allocator<Vector3d>> sphere_grid;
     for (int i=0; i<w_ind*h_ind*d_ind; i++) {
-        Vector3f curr_pt = grid[i];
+        Vector3d curr_pt = grid[i];
         sphere_grid.push_back(curr_pt);
     }
     return sphere_grid;
 }
 
-vector<Particle> Poisson::toObject(vector<Vector3f, aligned_allocator<Vector3f>> object) {
+vector<Particle> Poisson::toObject(vector<Vector3d, aligned_allocator<Vector3d>> object) {
     vector<Particle> part_list;
     for (int i=0; i<object.size(); i++) {
-        Vector3f point = object[i];
+        Vector3d point = object[i];
         // create a particle for each point in pointcloud
         if (point(0) >= 0 && point(0) < grid_width
             && point(1) >= 0 && point(1) < grid_height
             && point(2) >= 0 && point(2) < grid_depth) {
-//            Particle particle = Particle(point, Vector3f::Zero(), PT_MASS, LAMBDA, MU, TIMESTEP);
-            Particle particle = Particle(point, Vector3f(0,0,0), PT_MASS, LAMBDA, MU, TIMESTEP);
+//            Particle particle = Particle(point, Vector3d::Zero(), PT_MASS, LAMBDA, MU, TIMESTEP);
+            Particle particle = Particle(point, Vector3d(0,0,0), PT_MASS, LAMBDA, MU, TIMESTEP);
             part_list.push_back(particle);
         } else {
-            cout << "skipping \n";
+//            cout << "skipping \n";
+            continue;
         }
     }
     return part_list;
